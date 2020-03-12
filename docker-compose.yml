@@ -1,0 +1,34 @@
+version: '3'
+
+networks:
+  turtle_sewer_network:
+    driver: bridge
+
+services:
+
+  web-app:
+    # depends_on:
+    #   - server
+    env_file: .env
+    build:
+      context: ./web-app
+    networks:
+      - turtle_sewer_network
+    volumes:
+      - ./web-app/src:/code/src
+    ports:
+      - "${PORT_WEB_APP}:${PORT_WEB_APP}"
+    command: sh -c "npm run dev"
+  
+  server:
+    env_file: .env
+    build:
+      context: ./server
+    networks:
+      - turtle_sewer_network
+    volumes:
+      - .${DIR_DATA}:${DIR_DATA}
+      - ./server/src:/code/src
+    ports:
+      - "${PORT_SERVER}:${PORT_SERVER}"
+    command: sh -c "python index.py"

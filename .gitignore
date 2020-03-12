@@ -1,0 +1,8 @@
+# OSX hidden metadata file
+.DS_Store
+
+# Folders with .keep file are kept
+!.keep
+
+# Included libraries built with docker image
+**/node_modules/*
