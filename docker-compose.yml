@@ -28,7 +28,7 @@ services:
       - turtle_sewer_network
     volumes:
       - .${DIR_DATA}:${DIR_DATA}
-      - ./server/src:/code/src
+      - ./server/src:/code/
     ports:
       - "${PORT_SERVER}:${PORT_SERVER}"
-    command: sh -c "python index.py"
+    command: sh -c "env FLASK_APP=index.py FLASK_ENV=development flask run --port ${PORT_SERVER} --host ${HOST}"

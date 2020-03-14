@@ -1,8 +1,6 @@
 import React, { Component } from 'react'
 import Button from '@material-ui/core/Button'
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline'
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import GetAppIcon from '@material-ui/icons/GetApp'
 import PublishIcon from '@material-ui/icons/Publish'
 import Slider from '@material-ui/core/Slider'
 import Divider from '@material-ui/core/Divider'
@@ -24,7 +22,8 @@ class Sidebar extends Component {
 			width: '85%'
 		},
 		avatar: {
-			width: '50%'
+			width: '50%',
+			maxWidth: '150px'
 		}
 	}
 
@@ -38,6 +37,7 @@ class Sidebar extends Component {
 	constructor(props) {
 		super(props)
 
+		this.handleLoadClicked = this.handleLoadClicked.bind(this)
 		this.handleAnimateClicked = this.handleAnimateClicked.bind(this)
 		this.handleSpeedChange = this.handleSpeedChange.bind(this)
 	}
@@ -47,6 +47,10 @@ class Sidebar extends Component {
 
 	valuetext(value) {
 		return `${value}`
+	}
+
+	handleLoadClicked() {
+		this.props.handleLoadClicked()
 	}
 
 	handleAnimateClicked() {
@@ -63,7 +67,9 @@ class Sidebar extends Component {
   render() {
 
 		const { stepCurrent,
-						config } = this.props
+						config,
+						fileNameLoaded,
+						isAnimate } = this.props
 
 		const marks = [
 			config.simulateSpeed.slow.slider,
@@ -71,8 +77,8 @@ class Sidebar extends Component {
 			config.simulateSpeed.fast.slider,
 		]
 
-		let position = '?',
-				rotation = '?'
+		let position = '[ 0, 0 ]',
+				rotation = '0°'
 
 		if (stepCurrent && stepCurrent.position) {
 			position = `[ ${stepCurrent.position.x}, ${stepCurrent.position.y} ]`
@@ -87,11 +93,17 @@ class Sidebar extends Component {
 					color='primary'
 					style={this.style.button}
 					startIcon={<PublishIcon />}
+					onClick={this.handleLoadClicked}
 				>
 					Load 
 				</Button>
 
 				<br/><br/>
+				<Typography color='textSecondary' noWrap={true}>
+					{ fileNameLoaded ? fileNameLoaded : 'no file loaded' }
+				</Typography>
+
+				<br/>
 				<Divider variant='fullWidth' />
 				<br/>
 
@@ -120,12 +132,13 @@ class Sidebar extends Component {
 
 				<Button
 					variant='outlined'
-					color='secondary'
+					color={isAnimate ? 'secondary' : 'primary'}
 					style={this.style.button}
 					onClick={this.handleAnimateClicked}
-					startIcon={<PlayCircleOutlineIcon />}
+					disabled={fileNameLoaded ? false : true}
+					startIcon={<PlayCircleOutlineIcon/>}
 				>
-					Animate 
+					Animate
 				</Button>
 
 				<br/><br/>
@@ -138,6 +151,7 @@ class Sidebar extends Component {
 					min={0}
 					max={2}
 					step={1}
+					disabled={fileNameLoaded ? false : true}
 					marks={marks}
 					valueLabelDisplay='off'
 					onChangeCommitted={this.handleSpeedChange}
