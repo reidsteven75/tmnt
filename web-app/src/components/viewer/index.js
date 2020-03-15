@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 
 import StepSlider from './step-slider.js'
-import Grid from './grid.js'
+import Renderer from './renderer.js'
 
 class Viewer extends Component {
 
@@ -46,17 +46,20 @@ class Viewer extends Component {
 			stepIndexCurrent,
 			stepCount,
 			parseIndex,
-			config
+			config,
+			endState,
+			fileNameLoaded
 		} = this.props
 
 		let content = 
 		  <React.Fragment>
 				<StepSlider
+					disabled={fileNameLoaded}
 					max={stepCount}
-					value={stepIndexCurrent + 1}
+					value={parseIndex}
 					config={config}
 				/>
-				<Grid
+				<Renderer
 					easing={easing}
 					gridDimensions={gridDimensions}
 					stepCurrent={stepCurrent}
@@ -64,7 +67,9 @@ class Viewer extends Component {
 					stepNext={stepNext}
 					stepIndexNext={stepIndexNext}
 					parseIndex={parseIndex}
+					endState={endState}
 				/>
+				
 			</React.Fragment>
       
     return (

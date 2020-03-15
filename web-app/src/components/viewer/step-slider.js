@@ -41,7 +41,9 @@ class StepSlider extends Component {
 
   render() {
 
-		const { max, value } = this.props
+		const { max, 
+						value,
+						disabled } = this.props
 
 		let content = 
 			<div>
@@ -49,11 +51,12 @@ class StepSlider extends Component {
 					defaultValue={0}
 					getAriaValueText={this.valuetext}
 					aria-labelledby='discrete-slider-always'
-					min={1}
+					min={0}
 					value={value}
-					max={max}
+					max={max ? max : 0}
 					step={1}
-					valueLabelDisplay='on'
+					disabled={disabled ? false : true}
+					valueLabelDisplay={disabled ? 'on' : 'off'}
 				/>
 			</div>
       

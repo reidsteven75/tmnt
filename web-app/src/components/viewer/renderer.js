@@ -5,16 +5,29 @@ import * as p5 from 'p5'
 	rotation: 0-359 degrees, 0 = north
 */
 
-class Grid extends Component {
+class Renderer extends Component {
 
 	config = {
+		numGridLines: 10,
 		circleRadius: 25,
 		triangleSize: 20,
 		updateInterval: 500,
 		nodeRadiusUnique: 5,
-    nodeRadiusDuplicate: 15,
+		nodeRadiusDuplicate: 10,
+		nodeRadiusOrigin: 25,
     cooridinateHoverRadius: 20
 	}
+
+	// config = {
+	// 	numGridLines: 10,
+	// 	circleRadius: 6,
+	// 	triangleSize: 4,
+	// 	updateInterval: 500,
+	// 	nodeRadiusUnique: 1,
+	// 	nodeRadiusDuplicate: 2,
+	// 	nodeRadiusOrigin: 10,
+  //   cooridinateHoverRadius: 1
+	// }
 
 	style = {
 		wrapper: {
@@ -61,7 +74,8 @@ class Grid extends Component {
 			nextPosition_X: 0,
 			nextPosition_Y: 0,
       nextRotation: 0,
-      cooridinateMouseOver: null,
+			cooridinateMouseOver: null,
+			isReset: false
 		}
 
 		this.sketchRef = React.createRef()
@@ -78,6 +92,7 @@ class Grid extends Component {
 			this.initP5()
 		}
 		this.p5 = new p5(this.s)
+		this.p5.disableFriendlyErrors = true
 		this.setState({loading:false})
 
 	}	
@@ -90,84 +105,105 @@ class Grid extends Component {
 						stepSizePixels_X, 
 						stepSizePixels_Y,
 						origin_X,
-						origin_Y } = this.state,
+						origin_Y,
+						isReset } = this.state,
 
-          { stepNext, 
+					{ stepNext,
+						stepCurrent,
             stepIndexNext,
-            parseIndex } = props,
+						parseIndex } = props
 
-					{ nodesTravelled,
-						pathsTravelled,
-						nodesDuplicate,
-            pathsDuplicate } = this.cache
+		let	{ 
+					nodesTravelled,
+					pathsTravelled,
+					nodesDuplicate,
+					pathsDuplicate } = this.cache
     
-    // check if should reset travel visualizations
-    if (parseIndex <= 1) {
+		// check if should reset visualizations
+		if (parseIndex === 0 && isReset !== true) {
       this.cache = {
         nodesTravelled: [],
         pathsTravelled: [],
         nodesDuplicate: [],
-        pathsDuplicate: [],
-        currentPosition_X: origin_X,
-        currentPosition_Y: origin_Y,
-        currentRotation: 0
-      }
-    }
+        pathsDuplicate: []
+			}
+			this.setState({
+				isReset: true,
+				currentPosition_X: origin_X,
+				currentPosition_Y: origin_Y,
+				nextPosition_X: origin_X,
+				nextPosition_Y: origin_Y,
+				currentRotation: 0,
+				nextRotation: 0
+			})
+		}
 
 		// check if positions should be re-calculated
-		if (stepNext && nextIndex !== stepIndexNext) {
+		else if (stepCurrent && stepNext && nextIndex !== stepIndexNext) {
 
-			// position & rotation
-			const nextPosition_X = origin_X + stepSizePixels_X * stepNext.position.x,
-			 			nextPosition_Y = origin_Y + stepSizePixels_Y * stepNext.position.y,
-			 			nextRotation = stepNext.rotation
+			let pixelsCurrent = this.coordinatesToGridPixels(stepCurrent.position)
+			let pixelsNext = this.coordinatesToGridPixels(stepNext.position)
 
 			// nodes					
-			if (stepNext.dupNode === true) { 
+			if (stepCurrent.dupNode === true) { 
 				nodesDuplicate.push({
-					x:currentPosition_X, 
-					y:currentPosition_Y 
+					x:pixelsCurrent.x, 
+					y:pixelsCurrent.y 
 				}) 
 			}
 			else {
 				nodesTravelled.push({
-					x:currentPosition_X, 
-					y:currentPosition_Y 
+					x:pixelsCurrent.x, 
+					y:pixelsCurrent.y 
 				})
 			}
 
 			// paths
 			if (stepNext.dupPath === true) { 
 				pathsDuplicate.push({
-					x1:currentPosition_X, 
-					y1:currentPosition_Y,
-					x2:nextPosition_X, 
-					y2:nextPosition_Y
+					x1:pixelsCurrent.x, 
+					y1:pixelsCurrent.y,
+					x2:pixelsNext.x, 
+					y2:pixelsNext.y
 				}) 
 			}
 			else {
 				pathsTravelled.push({
-					x1:currentPosition_X, 
-					y1:currentPosition_Y,
-					x2:nextPosition_X, 
-					y2:nextPosition_Y
+					x1:pixelsCurrent.x, 
+					y1:pixelsCurrent.y,
+					x2:pixelsNext.x, 
+					y2:pixelsNext.y
 				}) 
 			}
 
+			
+
 			this.setState({
+				isReset: false,
 				nextIndex: stepIndexNext,
-				nextPosition_X: nextPosition_X,
-				nextPosition_Y: nextPosition_Y,
-				nextRotation: nextRotation,
+				nextPosition_X: pixelsNext.x,
+				nextPosition_Y: pixelsNext.y,
+				nextRotation: stepNext.rotation,
 			})
-			// , () => {
-			// 	this.sk.redraw(100)
-			// })
 		}
 	}
 
 	// functions
-  // ---------
+	// ---------
+	
+	coordinatesToGridPixels(position) {
+
+		const {	stepSizePixels_X, 
+						stepSizePixels_Y,
+						origin_X,
+						origin_Y } = this.state
+
+		return({
+			x: origin_X + stepSizePixels_X * position.x,
+			y: origin_Y + stepSizePixels_Y * position.y
+		})
+
+	}
   
   handleMouseMove() {
 
@@ -186,8 +222,8 @@ class Grid extends Component {
         if (dist(
                 mouseX, 
                 mouseY, 
-                grid_X, 
-                grid_Y) 
+                grid_X + 10, 
+                grid_Y + 10) 
                 < 
                 this.config.cooridinateHoverRadius) {
 
@@ -203,7 +239,7 @@ class Grid extends Component {
     }
 
     this.setState({
-      cooridinateMouseOver: cooridinate
+			cooridinateMouseOver: cooridinate
     })
     
   }
@@ -237,9 +273,7 @@ class Grid extends Component {
 	}
 
 	initP5() {
-
-		const { gridDimensions } = this.props
-
+		
 		this.sk.setup = () => {
 
 			const { canvasWidth, canvasHeight } = this.state
@@ -249,8 +283,8 @@ class Grid extends Component {
 			const origin_Y = sketchRef.offsetHeight/2
 
 			let canvas = this.sk.createCanvas(canvasWidth, canvasHeight)
-			// this.sk.noStroke().noLoop()
 			canvas.parent(sketchRef.id)
+			// this.sk.frameRate(26)
 
 			this.setState({
 				origin_X: origin_X,
@@ -265,6 +299,8 @@ class Grid extends Component {
 
 		this.sk.draw = () => {
 
+			// console.log('FPS: '+ Math.round(this.sk.frameRate()))
+
 			const { canvasWidth, 
 							canvasHeight, 
 							nextPosition_X, 
@@ -273,9 +309,15 @@ class Grid extends Component {
 							currentPosition_Y, 
 							currentRotation,
               nextRotation,
-              cooridinateMouseOver } = this.state,
+							cooridinateMouseOver,
+							origin_X,
+							origin_Y } = this.state,
 
-						{ easing } = this.props,
+						{ easing,
+							endState,
+							gridDimensions,
+							stepNext,
+							stepCurrent } = this.props,
 
 						{ nodesTravelled,
 							nodesDuplicate,
@@ -285,7 +327,8 @@ class Grid extends Component {
 						{ circleRadius,
 							triangleSize,
 							nodeRadiusUnique,
-							nodeRadiusDuplicate } = this.config,
+							nodeRadiusDuplicate,
+							nodeRadiusOrigin } = this.config,
 						
 						cos = (degrees) => { return(Math.cos(degrees * Math.PI / 180).toFixed(2)) },
 						sin = (degrees) => { return(Math.sin(degrees * Math.PI / 180).toFixed(2)) }
@@ -294,54 +337,78 @@ class Grid extends Component {
 					dy,
 					drot,
 					colorIntensity = 0,
-					colorIncrement = 1
+					colorIncrement = 1,
+					strokeWeight = 1
 
       this.sk.clear().noFill()
-
-      // position diff
-      dy = nextPosition_Y - currentPosition_Y
-			dx = nextPosition_X - currentPosition_X
-
-			// grid
-			for (var x = 0; x < canvasWidth; x += canvasWidth / gridDimensions) {
-				for (var y = 0; y < canvasHeight; y += canvasHeight / gridDimensions) {
-          this.sk.stroke(105,105,105)
-                  .strokeWeight(0.1)
-					        .line(x, 0, x, canvasHeight)
-                  .line(0, y, canvasWidth, y)
-                  .strokeWeight(0.7)
-				}
-			}
 			
 			// turtle
+			const drawTurtle = (pos_X, pos_Y, rot, r , g, b, radius, weight) => {
+				const x1 = pos_X - (triangleSize/2)*cos(rot),
+							x2 = pos_X + (triangleSize/2)*cos(rot),
+							x3 = pos_X + triangleSize*sin(rot),
+							y1 = pos_Y - (triangleSize/2)*sin(rot),
+							y2 = pos_Y + (triangleSize/2)*sin(rot),
+							y3 = pos_Y - triangleSize*cos(rot)
+
+				this.sk.stroke(r,g,b)
+								.noFill()
+								.strokeWeight(3)
+								.triangle(x1,y1,x2,y2,x3,y3)
+								.ellipse(
+									pos_X,
+									pos_Y,
+									radius,
+									radius
+								)
+			}
+			
+			
+			// turtle - end state
+			if (endState) {
+
+				const x = (endState.x + gridDimensions / 2) * canvasWidth / gridDimensions
+				const y = (endState.y + gridDimensions / 2) * canvasHeight / gridDimensions
+
+				for (var i = 0; i < circleRadius; i += colorIncrement ) {
+					drawTurtle(
+						x, 
+						y, 
+						endState.rotation, 
+						15, 
+						15, 
+						15,
+						i,
+						3
+					)
+				}
+				
+			}
+			// turtle - current state
+			dy = nextPosition_Y - currentPosition_Y
+			dx = nextPosition_X - currentPosition_X
 			for (var i = 0; i < circleRadius; i += colorIncrement ) {
 
 				// determine if moving
 				if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
 					colorIntensity = Math.floor(Math.random() * 5 * Math.max(Math.abs(dx),Math.abs(dy))) 
 					colorIncrement = 2
-					this.sk.strokeWeight(1)
+					strokeWeight = 1
 				}
 				else { 
 					colorIncrement = 5
-					this.sk.strokeWeight(3)
+					strokeWeight = 3
 				}
-
-				const x1 = currentPosition_X - (triangleSize/2)*cos(currentRotation),
-							x2 = currentPosition_X + (triangleSize/2)*cos(currentRotation),
-							x3 = currentPosition_X + triangleSize*sin(currentRotation),
-							y1 = currentPosition_Y - (triangleSize/2)*sin(currentRotation),
-							y2 = currentPosition_Y + (triangleSize/2)*sin(currentRotation),
-							y3 = currentPosition_Y - triangleSize*cos(currentRotation)
-
-        this.sk.stroke(37 + colorIntensity, 175 + colorIntensity, 180 + colorIntensity)
-                .triangle(x1,y1,x2,y2,x3,y3)
-								.ellipse(
-									currentPosition_X,
-									currentPosition_Y,
-									i,
-									i
-								)
+				drawTurtle(
+					currentPosition_X, 
+					currentPosition_Y, 
+					currentRotation, 
+					37 + colorIntensity, 
+					175 + colorIntensity, 
+					180 + colorIntensity,
+					i,
+					strokeWeight
+				)
 			}	
 
 			// travelled paths
@@ -370,12 +437,24 @@ class Grid extends Component {
 								)
 				})
 			}
+
+			// origin node
+			this.sk.stroke(	34, 150, 243)
+						.noFill()
+						.strokeWeight(1)
+						.ellipse(
+							origin_X,
+							origin_Y,
+							nodeRadiusOrigin,
+							nodeRadiusOrigin
+						)
 			
 			// travelled nodes
 			if (nodesTravelled.length > 0) {
 				nodesTravelled.forEach((node) => {
 					this.sk.stroke(	152, 255, 152)
 								.strokeWeight(1)
+								.fill(255, 255, 255)
 								.ellipse(
 									node.x,
 									node.y,
@@ -389,6 +468,7 @@ class Grid extends Component {
 				nodesDuplicate.forEach((node) => {
 					this.sk.stroke(	249, 111, 97)
 								.strokeWeight(3)
+								.fill(255, 255, 255)
 								.ellipse(
 									node.x,
 									node.y,
@@ -399,10 +479,10 @@ class Grid extends Component {
       }
       
       // hovered cooridinte
-
       if (cooridinateMouseOver) {
         this.sk.stroke(255, 255, 255)
 								.strokeWeight(0.9)
+								.noFill()
 								.ellipse(
 									cooridinateMouseOver.render.x,
 									cooridinateMouseOver.render.y,
@@ -426,22 +506,32 @@ class Grid extends Component {
                   cooridinateMouseOver.render.y-17
                   )
       }
-
-			// update position
 			
-      // TODO: figure out rotation edge case from 270 -> 0
-      let rotFactor = 0
-			if (currentRotation > 180 && nextRotation === 0) {
-				drot = 360 - currentRotation
-			}
-			else {
-				drot = nextRotation - currentRotation
-      }
-      
-      if (currentRotation > 359) {
-        rotFactor = 360
-      }
-
+      // account for rotations from 270 -> 0, 0 -> 270
+			let rotFactor = 0
+			drot = nextRotation - currentRotation
+			if (stepNext && stepCurrent) {
+				if (stepCurrent.rotation === 270 && stepNext.rotation === 0) {
+					if (currentRotation >= 180) {
+						rotFactor = 360
+						drot = 0
+					} else {
+						drot = 0 - currentRotation
+					}
+				}
+				else if (stepCurrent.rotation === 0  && stepNext.rotation === 270) {	
+					if (currentRotation <= 1) {
+						rotFactor = -360 
+						drot = 0
+					} else {
+						drot = 270 - currentRotation
+					}
+				}
+			} 
+		
+			// console.log(rotFactor, currentRotation, nextRotation)
+		
+			// update position
 			this.setState({
 				stepSizePixels_X: canvasWidth / gridDimensions,
 				stepSizePixels_Y: canvasHeight / gridDimensions,
@@ -459,7 +549,7 @@ class Grid extends Component {
 
 		let content = 
       <div 
-        id='sketch-area' 
+        id='sketch-area-grid' 
         ref={this.sketchRef}
         style={this.style.sketchArea}
       >
@@ -473,4 +563,4 @@ class Grid extends Component {
   }
 }
 
-export default Grid
+export default Renderer

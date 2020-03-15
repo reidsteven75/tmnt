@@ -37,27 +37,27 @@ const theme = createMuiTheme({
 })
 
 const config = {
-  gridDimensions: 30,
+  gridPadding: 5,
   simulateSpeed: {
     fast: {
-      updateRate: 50,
-      easing: 0.95,
+      updateRate: 1,
+      easing: 1,
       slider: {
         value: 2,
         label: 'Fast'
       }
     },
     mid: {
-      updateRate: 400,
-      easing: 0.2,
+      updateRate: 300,
+      easing: 0.3,
       slider: {
         value: 1,
         label: 'Normal'
       }
     },
     slow: {
-      updateRate: 2000,
-      easing: 0.05,
+      updateRate: 3000,
+      easing: 0.1,
       slider: {
         value: 0,
         label: 'Slow'
@@ -65,30 +65,6 @@ const config = {
     }
   }
 }
-
-const gridDimensions = config.gridDimensions
-
-// const steps = [
-//   {char: 'L', dupNode: false, dupPath: false, position: { x:0, y:0 }, rotation: 270},
-//   {char: 'R', dupNode: false, dupPath: false, position: { x:0, y:0 }, rotation: 0},
-//   {char: 'L', dupNode: false, dupPath: false, position: { x:0, y:0 }, rotation: 270},
-//   {char: 'R', dupNode: false, dupPath: false, position: { x:0, y:0 }, rotation: 0},
-//   {char: 'R', dupNode: false, dupPath: false, position: { x:0, y:0 }, rotation: 90},
-//   {char: 'F', dupNode: false, dupPath: false, position: { x:1, y:0 }, rotation: 90},
-//   {char: 'F', dupNode: false, dupPath: false, position: { x:2, y:0 }, rotation: 90},
-//   {char: 'L', dupNode: false, dupPath: false, position: { x:2, y:0 }, rotation: 0},
-//   {char: 'F', dupNode: false, dupPath: false, position: { x:2, y:-1 }, rotation: 0},
-//   {char: 'R', dupNode: false, dupPath: false, position: { x:2, y:-1 }, rotation: 90},
-//   {char: 'R', dupNode: false, dupPath: false, position: { x:2, y:-1 }, rotation: 180},
-//   {char: 'F', dupNode: true, dupPath: true, position: { x:2, y:0 }, rotation: 180},
-//   {char: 'R', dupNode: false, dupPath: false, position: { x:2, y:0 }, rotation: 270},
-//   {char: 'F', dupNode: true, dupPath: true, position: { x:1, y:0 }, rotation: 270},
-//   {char: 'R', dupNode: false, dupPath: false, position: { x:1, y:0 }, rotation: 0},
-//   {char: 'F', dupNode: false, dupPath: false, position: { x:1, y:-1 }, rotation: 0},
-//   {char: 'F', dupNode: false, dupPath: false, position: { x:1, y:-2 }, rotation: 0},
-//   {char: 'F', dupNode: false, dupPath: false, position: { x:1, y:-3 }, rotation: 0}
-// ]
-
 
 // app
 // ----
@@ -111,14 +87,19 @@ class App extends Component {
       stepIndexNext: null,
       stepIndexCurrent: null,
       stepCount: null,
+      steps: null,
+      endState: null,
+      gridDimensions: null,
+      fileNameLoaded: null,
       parseIndex: 0,
       isAnimate: false,
-      fileNameLoaded: null,
+      isLoadingFile: false,
       showErrorDialog: false,
       errorMessage: null,
-      steps: null
+      isAnimationResetRequired: false
     }
 
+    this._handleAnimateReset = this._handleAnimateReset.bind(this)
 		this._handleAnimateClicked = this._handleAnimateClicked.bind(this)
     this._handleSpeedChange = this._handleSpeedChange.bind(this)
     this._handleLoadClicked = this._handleLoadClicked.bind(this)
@@ -136,6 +117,10 @@ class App extends Component {
   parserAdjustSpeed() {
     clearInterval(this.cache.parserFunction)
     this.parserStart()
+  }
+
+  parserReset() {
+    clearInterval(this.cache.parserFunction)
   }
 
   parserPause() {
@@ -163,25 +148,53 @@ class App extends Component {
           stepPrevious: stepPrevious,
           stepIndexCurrent: parseIndex,
           stepIndexNext: parseIndex + 1,
-          stepCount: steps.length - 1,
           parseIndex: parseIndex + 1
+        })
+      }
+      if (!stepNext) {
+        this.setState({
+          isAnimationResetRequired: true,
+          isAnimate: false
         })
       }
 
     }, updateRate)
   }
 
-  async _handleLoadClicked() {
-    try {
-      let res = await getFile()
-      this.setState({
-        fileNameLoaded: res.fileName,
-        steps: res.fileData.steps
-      }) 
-    } 
-    catch (error) {
-      this.showErrorDialoge(error)
-    }
+  _handleLoadClicked() {
+    this.setState({
+      isLoadingFile: true
+    }, async () => {
+      try {
+        let res = await getFile()
+        const roundedGridDim = 2 * Math.round(res.fileData.gridDimension + config.gridPadding / 2)
+
+        console.log(res)
+
+        this.parserReset()
+        this.setState({
+          isLoadingFile: false,
+          fileNameLoaded: res.fileName,
+          steps: res.fileData.steps,
+          endState: res.fileData.endState,
+          gridDimensions: roundedGridDim,
+          stepCurrent: null,
+          stepPrevious: null,
+          stepNext: null,
+          stepIndexNext: null,
+          stepIndexCurrent: null,
+          stepCount: res.fileData.steps.length - 1,
+          parseIndex: 0,
+          isAnimate: false,
+          isAnimationResetRequired: false,
+        }) 
+      } 
+      catch (error) {
+        this.setState({isLoadingFile: false}, () => {
+          this.showErrorDialoge(error)
+        })
+      }
+    })
     
   }
 
@@ -198,8 +211,26 @@ class App extends Component {
     })
   }
 
+  _handleAnimateReset() {
+    this.parserReset()
+    this.setState({
+      stepCurrent: null,
+      stepPrevious: null,
+      stepNext: null,
+      stepIndexNext: null,
+      stepIndexCurrent: null,
+      parseIndex: 0,
+      isAnimate: false,
+      isAnimationResetRequired: false
+    }) 
+  }
+
 	_handleAnimateClicked() {
     const { isAnimate } = this.state
+
+    const { simulateSpeed } = this.state
+    const updateRate = config.simulateSpeed[simulateSpeed].updateRate
+    console.log(updateRate)
 
     if (isAnimate !== true) {
       this.setState({ isAnimate: true }, () => {
@@ -244,7 +275,11 @@ class App extends Component {
             showErrorDialog,
             errorMessage,
             isAnimate,
-            steps } = this.state
+            isLoadingFile,
+            steps,
+            endState,
+            gridDimensions,
+            isAnimationResetRequired } = this.state
 
     const easing = config.simulateSpeed[simulateSpeed].easing
 
@@ -254,21 +289,27 @@ class App extends Component {
         <div className='App'>
           <Header/>
           <Grid container spacing={0}>
-            <Grid item xs={2}>
-              <Sidebar
+            <Grid item xs={2} style={{width:'20%'}}>
+              <Sidebar  
+                isAnimationResetRequired={isAnimationResetRequired}
+                isLoadingFile={isLoadingFile}
                 isAnimate={isAnimate}
                 fileNameLoaded={fileNameLoaded}
                 stepCurrent={stepCurrent}
+                stepNext={stepNext}
                 handleAnimateClicked={this._handleAnimateClicked}
                 handleSpeedChange={this._handleSpeedChange}
                 handleLoadClicked={this._handleLoadClicked}
+                handleAnimateReset={this._handleAnimateReset}
                 config={config}
+                endState={endState}
               />
             </Grid>
-            <Grid item xs={10}>
+            <Grid item xs={10} style={{width:'80%'}}>
               <Viewer
                 easing={easing}
                 gridDimensions={gridDimensions}
+                fileNameLoaded={fileNameLoaded}
                 steps={steps}
                 stepIndexCurrent={stepIndexCurrent}
                 stepCurrent={stepCurrent}
@@ -277,7 +318,7 @@ class App extends Component {
                 stepIndexNext={stepIndexNext}
                 stepCount={stepCount}
                 parseIndex={parseIndex}
-                
+                endState={endState}
               />
             </Grid>
           </Grid>
