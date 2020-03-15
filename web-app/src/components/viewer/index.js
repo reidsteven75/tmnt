@@ -24,6 +24,10 @@ class Viewer extends Component {
     super(props)
     this.state = {
 			loading: true,
+			rendererOrigin_X: null,
+      rendererOrigin_Y: null,
+      rendererCanvasWidth: null,
+      rendererCanvasHeight: null
 		}
 	}
 
@@ -43,12 +47,16 @@ class Viewer extends Component {
 			stepPrevious,
 			stepNext,
 			stepIndexNext,
-			stepIndexCurrent,
 			stepCount,
 			parseIndex,
+			steps,
 			config,
 			endState,
-			fileNameLoaded
+			fileNameLoaded,
+			handleRendererUpdateDimensions,
+			cache,
+			handleSliderChange,
+			isAnimate
 		} = this.props
 
 		let content = 
@@ -58,16 +66,21 @@ class Viewer extends Component {
 					max={stepCount}
 					value={parseIndex}
 					config={config}
+					parseIndex={parseIndex}
+					handleChange={handleSliderChange}
 				/>
 				<Renderer
+					cache={cache}
+					handleRendererUpdateDimensions={handleRendererUpdateDimensions}
 					easing={easing}
 					gridDimensions={gridDimensions}
+					steps={steps}
 					stepCurrent={stepCurrent}
 					stepPrevious={stepPrevious}
 					stepNext={stepNext}
-					stepIndexNext={stepIndexNext}
 					parseIndex={parseIndex}
 					endState={endState}
+					isAnimate={isAnimate}
 				/>
 				
 			</React.Fragment>

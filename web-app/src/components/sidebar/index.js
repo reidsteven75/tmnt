@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import Button from '@material-ui/core/Button'
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline'
-import RotateLeftIcon from '@material-ui/icons/RotateLeft'
 import PublishIcon from '@material-ui/icons/Publish'
 import Slider from '@material-ui/core/Slider'
 import Divider from '@material-ui/core/Divider'
@@ -51,7 +50,6 @@ class Sidebar extends Component {
 		this.handleLoadClicked = this.handleLoadClicked.bind(this)
 		this.handleAnimateClicked = this.handleAnimateClicked.bind(this)
 		this.handleSpeedChange = this.handleSpeedChange.bind(this)
-		this.handleAnimateReset = this.handleAnimateReset.bind(this)
 		
 	}
 
@@ -60,10 +58,6 @@ class Sidebar extends Component {
 
 	valuetext(value) {
 		return `${value}`
-	}
-
-	handleAnimateReset() {
-		this.props.handleAnimateReset()
 	}
 
 	handleLoadClicked() {
@@ -89,8 +83,7 @@ class Sidebar extends Component {
 						fileNameLoaded,
 						isAnimate,
 						isLoadingFile,
-						endState,
-						isAnimationResetRequired } = this.props
+						endState } = this.props
 
 		const marks = [
 			config.simulateSpeed.slow.slider,
@@ -156,7 +149,7 @@ class Sidebar extends Component {
 					color={isAnimate ? 'secondary' : 'primary'}
 					style={this.style.button}
 					onClick={this.handleAnimateClicked}
-					disabled={fileNameLoaded && !isAnimationResetRequired ? false : true}
+					disabled={fileNameLoaded ? false : true}
 					startIcon={<PlayCircleOutlineIcon/>}
 				>
 					Animate
@@ -180,19 +173,6 @@ class Sidebar extends Component {
 
 				<br/><br/>
 
-				<Button
-					variant='outlined'
-					color={'primary'}
-					style={this.style.button}
-					onClick={this.handleAnimateReset}
-					disabled={fileNameLoaded ? false : true}
-					startIcon={<RotateLeftIcon/>}
-				>
-					Reset
-				</Button>
-
-				<br/><br/>
-
 				<Divider variant='fullWidth' />
 				<br/>
 
@@ -212,16 +192,6 @@ class Sidebar extends Component {
 								<Typography color='textPrimary'>{char}</Typography>
 							</Grid>
 						</Grid>
-						{/* <Grid container spacing={0}>
-							<Grid item xs={6}>
-								<Typography color='textSecondary'>Pos.</Typography>
-								<Typography color='textPrimary'>{positionCurrent}</Typography>
-							</Grid>
-							<Grid item xs={6}>
-								<Typography color='textSecondary'>Rot.</Typography>
-								<Typography color='textPrimary'>{rotationCurrent}</Typography>
-							</Grid>
-						</Grid> */}
 					</CardContent>
 				</Card>
 
@@ -249,58 +219,10 @@ class Sidebar extends Component {
 						</TableBody>
 					</Table>
 				</TableContainer>
-{/* 
-				<br/>
-
-				<Card>
-     			<CardContent>
-						<Typography color='textPrimary' align='left'>Next State</Typography>
-						<br/>
-						<Grid container spacing={0}>
-							<Grid item xs={6}>
-								<Typography color='textSecondary'>Pos.</Typography>
-								<Typography color='textPrimary'>{positionNext}</Typography>
-							</Grid>
-							<Grid item xs={6}>
-								<Typography color='textSecondary'>Rot.</Typography>
-								<Typography color='textPrimary'>{rotationNext}</Typography>
-							</Grid>
-						</Grid>
-					</CardContent>
-				</Card>
-
-				<br/>
-
-				<Card>
-     			<CardContent>
-						<Typography color='textPrimary' align='left'>End State</Typography>
-						<br/>
-						<Grid container spacing={0}>
-							<Grid item xs={6}>
-								<Typography color='textSecondary'>Pos.</Typography>
-								<Typography color='textPrimary'>{positionEnd}</Typography>
-							</Grid>
-							<Grid item xs={6}>
-								<Typography color='textSecondary'>Rot.</Typography>
-								<Typography color='textPrimary'>{rotationEnd}</Typography>
-							</Grid>
-						</Grid>
-					</CardContent>
-				</Card> */}
 
 				<br/>
 				<Divider variant='fullWidth' />
 				<br/>
-{/* 
-				<Button
-					variant='outlined'
-					color='primary'
-					style={this.style.button}
-					startIcon={<GetAppIcon />}
-				>
-					Export 
-				</Button> */}
-
 
 			</div>
 		)

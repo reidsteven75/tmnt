@@ -11,6 +11,7 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 
+import { coordinatesToGridPixels } from './utils'
 import Header from './components/header'
 import Viewer from './components/viewer'
 import Sidebar from './components/sidebar'
@@ -56,7 +57,7 @@ const config = {
       }
     },
     slow: {
-      updateRate: 3000,
+      updateRate: 1000,
       easing: 0.1,
       slider: {
         value: 0,
@@ -72,6 +73,10 @@ class App extends Component {
 
   cache = {
     parserFunction: null,
+    parsedDupNodes: [],
+    parsedNodes: [],
+    parsedDupPaths: [],
+    parsedPaths: []
   }
 
   // lifecycle
@@ -84,8 +89,6 @@ class App extends Component {
       stepCurrent: null,
       stepPrevious: null,
       stepNext: null,
-      stepIndexNext: null,
-      stepIndexCurrent: null,
       stepCount: null,
       steps: null,
       endState: null,
@@ -96,13 +99,16 @@ class App extends Component {
       isLoadingFile: false,
       showErrorDialog: false,
       errorMessage: null,
-      isAnimationResetRequired: false
+      rendererWidth: null,
+      rendererHeight: null
     }
 
-    this._handleAnimateReset = this._handleAnimateReset.bind(this)
+    this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
+    // this._handleAnimateReset = this._handleAnimateReset.bind(this)
 		this._handleAnimateClicked = this._handleAnimateClicked.bind(this)
     this._handleSpeedChange = this._handleSpeedChange.bind(this)
     this._handleLoadClicked = this._handleLoadClicked.bind(this)
+    this._handleViewerSliderChange = this._handleViewerSliderChange.bind(this)
     this.handleErrorDialogClose = this.handleErrorDialogClose.bind(this)
 
   }
@@ -146,19 +152,88 @@ class App extends Component {
           stepCurrent: stepCurrent,
           stepNext: stepNext,
           stepPrevious: stepPrevious,
-          stepIndexCurrent: parseIndex,
-          stepIndexNext: parseIndex + 1,
           parseIndex: parseIndex + 1
         })
       }
       if (!stepNext) {
         this.setState({
-          isAnimationResetRequired: true,
           isAnimate: false
         })
       }
 
     }, updateRate)
+  }
+
+  parsePaths(paths, gridDimensions) {
+    if (!paths || paths.length === 0) { return [] }
+
+    const { rendererWidth,
+            rendererHeight } = this.state
+
+    let parsed = []
+    paths.forEach((path) => {
+      const pixelPos1 = coordinatesToGridPixels(
+        path.path[0][0],
+        path.path[0][1],
+        rendererWidth, 
+        rendererHeight, 
+        gridDimensions
+      )
+      const pixelPos2 = coordinatesToGridPixels(
+        path.path[1][0],
+        path.path[1][1],
+        rendererWidth, 
+        rendererHeight, 
+        gridDimensions
+      )
+      parsed.push ({
+        index: path.i,
+        x1: pixelPos1.x,
+        y1: pixelPos1.y,
+        x2: pixelPos2.x,
+        y2: pixelPos2.y
+      })
+    })
+    return parsed
+  }
+
+  parseNodes(nodes, gridDimensions) {
+    if (!nodes || nodes.length === 0) { return [] }
+
+    const { rendererWidth,
+            rendererHeight } = this.state
+
+    let parsed = []
+    nodes.forEach((node) => {
+      const pixelPos = coordinatesToGridPixels(
+        node.position[0],
+        node.position[1],
+        rendererWidth, 
+        rendererHeight, 
+        gridDimensions
+      )
+      parsed.push ({
+        index: node.i,
+        x: pixelPos.x,
+        y: pixelPos.y
+      })
+    })
+    return parsed
+  }
+
+  _handleViewerSliderChange(value) {
+    this.parserPause()
+    this.setState({
+      parseIndex: value + 1,
+      isAnimate: false
+    })
+  }
+
+  _handleRendererUpdateDimensions(width, height) {
+    this.setState({
+      rendererWidth: width,
+      rendererHeight: height
+    })
   }
 
   _handleLoadClicked() {
@@ -171,6 +246,11 @@ class App extends Component {
 
         console.log(res)
 
+        this.cache.parsedDupNodes = this.parseNodes(res.fileData.dupNodes, roundedGridDim)
+        this.cache.parsedNodes = this.parseNodes(res.fileData.nodes, roundedGridDim)
+        this.cache.parsedDupPaths = this.parsePaths(res.fileData.dupPaths, roundedGridDim)
+        this.cache.parsedPaths = this.parsePaths(res.fileData.paths, roundedGridDim)
+
         this.parserReset()
         this.setState({
           isLoadingFile: false,
@@ -181,12 +261,9 @@ class App extends Component {
           stepCurrent: null,
           stepPrevious: null,
           stepNext: null,
-          stepIndexNext: null,
-          stepIndexCurrent: null,
           stepCount: res.fileData.steps.length - 1,
-          parseIndex: 0,
-          isAnimate: false,
-          isAnimationResetRequired: false,
+          parseIndex: res.fileData.steps.length,
+          isAnimate: false
         }) 
       } 
       catch (error) {
@@ -211,29 +288,18 @@ class App extends Component {
     })
   }
 
-  _handleAnimateReset() {
-    this.parserReset()
-    this.setState({
-      stepCurrent: null,
-      stepPrevious: null,
-      stepNext: null,
-      stepIndexNext: null,
-      stepIndexCurrent: null,
-      parseIndex: 0,
-      isAnimate: false,
-      isAnimationResetRequired: false
-    }) 
-  }
-
 	_handleAnimateClicked() {
     const { isAnimate } = this.state
 
-    const { simulateSpeed } = this.state
-    const updateRate = config.simulateSpeed[simulateSpeed].updateRate
-    console.log(updateRate)
+    const { stepCount,
+            parseIndex } = this.state
 
     if (isAnimate !== true) {
-      this.setState({ isAnimate: true }, () => {
+      let newState = { isAnimate: true }
+      // restart at 0 if end of animation
+      if (stepCount + 1 === parseIndex) { newState.parseIndex = 0 }
+      this.parserReset()
+      this.setState(newState, () => {
         this.parserStart()
       })
     }
@@ -266,8 +332,6 @@ class App extends Component {
     const { stepPrevious, 
             stepCurrent, 
             stepNext, 
-            stepIndexNext,
-            stepIndexCurrent,
             stepCount,
             parseIndex,
             simulateSpeed,
@@ -278,8 +342,7 @@ class App extends Component {
             isLoadingFile,
             steps,
             endState,
-            gridDimensions,
-            isAnimationResetRequired } = this.state
+            gridDimensions } = this.state
 
     const easing = config.simulateSpeed[simulateSpeed].easing
 
@@ -291,7 +354,6 @@ class App extends Component {
           <Grid container spacing={0}>
             <Grid item xs={2} style={{width:'20%'}}>
               <Sidebar  
-                isAnimationResetRequired={isAnimationResetRequired}
                 isLoadingFile={isLoadingFile}
                 isAnimate={isAnimate}
                 fileNameLoaded={fileNameLoaded}
@@ -300,25 +362,26 @@ class App extends Component {
                 handleAnimateClicked={this._handleAnimateClicked}
                 handleSpeedChange={this._handleSpeedChange}
                 handleLoadClicked={this._handleLoadClicked}
-                handleAnimateReset={this._handleAnimateReset}
                 config={config}
                 endState={endState}
               />
             </Grid>
             <Grid item xs={10} style={{width:'80%'}}>
               <Viewer
+                handleSliderChange={this._handleViewerSliderChange}
+                handleRendererUpdateDimensions={this._handleRendererUpdateDimensions}
+                cache={this.cache}
                 easing={easing}
                 gridDimensions={gridDimensions}
                 fileNameLoaded={fileNameLoaded}
                 steps={steps}
-                stepIndexCurrent={stepIndexCurrent}
                 stepCurrent={stepCurrent}
                 stepPrevious={stepPrevious}
                 stepNext={stepNext}
-                stepIndexNext={stepIndexNext}
                 stepCount={stepCount}
                 parseIndex={parseIndex}
                 endState={endState}
+                isAnimate={isAnimate}
               />
             </Grid>
           </Grid>

@@ -37,9 +37,19 @@ def process_char_data(char_list):
     '+y': 0
   }
 
+  cache = {
+    'nodes': [[0, 0]], 
+    'paths': [],
+    'dupNodes': [],
+    'dupPaths': []
+  }
+
   processed = {
     'steps': [0] * (len(char_list) + 1),
-    'nodes': [[0, 0]], 
+    'nodes': [{
+      'i': 0,
+      'position': [0, 0]
+    }], 
     'paths': [],
     'dupNodes': [],
     'dupPaths': [],
@@ -79,23 +89,39 @@ def process_char_data(char_list):
       path = [processed['steps'][i-1]['position'], processed['steps'][i]['position']]
       path_reversed = [path[1],path[0]]
 
-      if (path in processed['paths'] or path_reversed in processed['paths']):
+      if (path in cache['paths'] or path_reversed in cache['paths']):
         processed['steps'][i]['dupPath'] = True
-        if (path not in processed['dupPaths']):
-          processed['dupPaths'].append(path)
+        if (path not in cache['dupPaths']):
+          cache['dupPaths'].append(path)
+          processed['dupPaths'].append({
+            'i': i,
+            'path': path
+          })
       else:
-        if (processed['steps'][i]['position'] not in processed['paths']):
-          processed['paths'].append(path)
+        if (processed['steps'][i]['position'] not in cache['paths']):
+          cache['paths'].append(path)
+          processed['paths'].append({
+            'i': i,
+            'path': path
+          })
     
       # determine unique nodes travelled to, and nodes travelled to more than once (duplicate)
       position = processed['steps'][i]['position']
-      if (position in processed['nodes']):
+      if (position in cache['nodes']):
         processed['steps'][i]['dupNode'] = True
-        if (position not in processed['dupNodes']):
-          processed['dupNodes'].append(position)
+        if (position not in cache['dupNodes']):
+          cache['dupNodes'].append(position)
+          processed['dupNodes'].append({
+            'i': i,
+            'position': position
+          })
       else:
-        if (position not in processed['nodes']):
-          processed['nodes'].append(position)
+        if (position not in cache['nodes']):
+          cache['nodes'].append(position)
+          processed['nodes'].append({
+            'i': i,
+            'position': position
+          })
 
       # calculate max cooridinates
       if (position[0] < max_coordinates['-x']):
@@ -104,7 +130,7 @@ def process_char_data(char_list):
         max_coordinates['+x'] = position[0]
       if (position[1] < max_coordinates['-y']):
         max_coordinates['-y'] = position[1]
-      if (position[0] < max_coordinates['+y']):
+      if (position[1] < max_coordinates['+y']):
         max_coordinates['+y'] = position[1]
 
     # apply rotation to previous step state

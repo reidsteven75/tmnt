@@ -3,10 +3,6 @@ import Slider from '@material-ui/core/Slider'
 
 class StepSlider extends Component {
 
-	config = {
-
-  }
-
 	style = {
 		wrapper: {
 			padding: 20,
@@ -22,8 +18,9 @@ class StepSlider extends Component {
   constructor(props) {
     super(props)
     this.state = {
-			loading: true,
+			loading: true
 		}
+		this.handleChange = this.handleChange.bind(this)
 	}
 
 	componentDidMount() {
@@ -35,15 +32,19 @@ class StepSlider extends Component {
 	valuetext(value) {
 		return `${value}`
 	}
+
+	handleChange(e, value) {
+		this.props.handleChange(value)
+	}
 	
 	// render
 	// ------
 
   render() {
 
-		const { max, 
-						value,
-						disabled } = this.props
+		const	{ max, 
+						disabled,
+						parseIndex } = this.props
 
 		let content = 
 			<div>
@@ -52,9 +53,10 @@ class StepSlider extends Component {
 					getAriaValueText={this.valuetext}
 					aria-labelledby='discrete-slider-always'
 					min={0}
-					value={value}
+					value={parseIndex - 1}
 					max={max ? max : 0}
 					step={1}
+					onChange={this.handleChange}
 					disabled={disabled ? false : true}
 					valueLabelDisplay={disabled ? 'on' : 'off'}
 				/>

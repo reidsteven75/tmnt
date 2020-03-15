@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import * as p5 from 'p5'
 
+import { coordinatesToGridPixels } from '../../utils'
+
 /*
 	rotation: 0-359 degrees, 0 = north
 */
@@ -70,7 +72,6 @@ class Renderer extends Component {
 			currentPosition_X: 0,
 			currentPosition_Y: 0,
 			currentRotation: 0,
-			nextIndex: 0,
 			nextPosition_X: 0,
 			nextPosition_Y: 0,
       nextRotation: 0,
@@ -88,7 +89,7 @@ class Renderer extends Component {
 
 		this.s = (sk) => {  
 			this.sk = sk
-			this.updateCanvasSize()
+			// this.updateCanvasSize()
 			this.initP5()
 		}
 		this.p5 = new p5(this.s)
@@ -97,36 +98,25 @@ class Renderer extends Component {
 
 	}	
 
-	componentDidUpdate(props) {
+	componentDidUpdate(prevProps) {
 
-		const { nextIndex, 
-						currentPosition_X, 
-						currentPosition_Y, 
-						stepSizePixels_X, 
-						stepSizePixels_Y,
+		const { canvasWidth, 
+						canvasHeight,
 						origin_X,
 						origin_Y,
 						isReset } = this.state,
 
-					{ stepNext,
+					{ gridDimensions,
+						stepNext,
 						stepCurrent,
-            stepIndexNext,
-						parseIndex } = props
+						parseIndex,
+						isAnimate,
+						steps } = this.props,
 
-		let	{ 
-					nodesTravelled,
-					pathsTravelled,
-					nodesDuplicate,
-					pathsDuplicate } = this.cache
-    
+						parseIndexPrev = prevProps.parseIndex
+
 		// check if should reset visualizations
 		if (parseIndex === 0 && isReset !== true) {
-      this.cache = {
-        nodesTravelled: [],
-        pathsTravelled: [],
-        nodesDuplicate: [],
-        pathsDuplicate: []
-			}
 			this.setState({
 				isReset: true,
 				currentPosition_X: origin_X,
@@ -138,49 +128,37 @@ class Renderer extends Component {
 			})
 		}
 
-		// check if positions should be re-calculated
-		else if (stepCurrent && stepNext && nextIndex !== stepIndexNext) {
-
-			let pixelsCurrent = this.coordinatesToGridPixels(stepCurrent.position)
-			let pixelsNext = this.coordinatesToGridPixels(stepNext.position)
-
-			// nodes					
-			if (stepCurrent.dupNode === true) { 
-				nodesDuplicate.push({
-					x:pixelsCurrent.x, 
-					y:pixelsCurrent.y 
-				}) 
-			}
-			else {
-				nodesTravelled.push({
-					x:pixelsCurrent.x, 
-					y:pixelsCurrent.y 
-				})
-			}
-
-			// paths
-			if (stepNext.dupPath === true) { 
-				pathsDuplicate.push({
-					x1:pixelsCurrent.x, 
-					y1:pixelsCurrent.y,
-					x2:pixelsNext.x, 
-					y2:pixelsNext.y
-				}) 
-			}
-			else {
-				pathsTravelled.push({
-					x1:pixelsCurrent.x, 
-					y1:pixelsCurrent.y,
-					x2:pixelsNext.x, 
-					y2:pixelsNext.y
-				}) 
-			}
-
-			
+		// if slider is moving, calculate next pixel position
+		if (steps && steps[parseIndex - 1] && parseIndexPrev !== parseIndex && isAnimate !== true) {
+			let pixelsNext = coordinatesToGridPixels(
+				steps[parseIndex - 1].position.x,
+				steps[parseIndex - 1].position.y,
+				canvasWidth, 
+				canvasHeight, 
+				gridDimensions
+			)
 
 			this.setState({
 				isReset: false,
-				nextIndex: stepIndexNext,
+				nextPosition_X: pixelsNext.x,
+				nextPosition_Y: pixelsNext.y,
+				nextRotation: steps[parseIndex - 1].rotation,
+			})
+		}
+
+		// if animation, calculate next pixel position
+		else if (steps && steps[parseIndex - 1] && stepNext && parseIndexPrev !== parseIndex) {
+
+			let pixelsNext = coordinatesToGridPixels(
+				stepNext.position.x,
+				stepNext.position.y,
+				canvasWidth, 
+				canvasHeight, 
+				gridDimensions
+			)
+
+			this.setState({
+				isReset: false,
 				nextPosition_X: pixelsNext.x,
 				nextPosition_Y: pixelsNext.y,
 				nextRotation: stepNext.rotation,
@@ -190,20 +168,6 @@ class Renderer extends Component {
 
 	// functions
 	// ---------
-	
-	coordinatesToGridPixels(position) {
-
-		const {	stepSizePixels_X, 
-						stepSizePixels_Y,
-						origin_X,
-						origin_Y } = this.state
-
-		return({
-			x: origin_X + stepSizePixels_X * position.x,
-			y: origin_Y + stepSizePixels_Y * position.y
-		})
-
-	}
   
   handleMouseMove() {
 
@@ -244,15 +208,6 @@ class Renderer extends Component {
     
   }
 
-	updateCanvasSize() {
-		const height = this.sketchRef.current.offsetHeight
-		const width = this.sketchRef.current.offsetWidth
-		this.setState({
-			canvasWidth: width,
-			canvasHeight: height
-		})
-	}
-
 	redrawCanvas() {
 
 		const { canvasWidth, 
@@ -276,17 +231,24 @@ class Renderer extends Component {
 		
 		this.sk.setup = () => {
 
-			const { canvasWidth, canvasHeight } = this.state
-
 			const sketchRef = this.sketchRef.current
 			const origin_X = sketchRef.offsetWidth/2
 			const origin_Y = sketchRef.offsetHeight/2
+			const canvasHeight = sketchRef.offsetHeight
+			const canvasWidth = sketchRef.offsetWidth
 
 			let canvas = this.sk.createCanvas(canvasWidth, canvasHeight)
 			canvas.parent(sketchRef.id)
 			// this.sk.frameRate(26)
 
+			this.props.handleRendererUpdateDimensions(
+				canvasWidth,
+				canvasHeight
+			)
+
 			this.setState({
+				canvasWidth: canvasWidth,
+				canvasHeight: canvasHeight,
 				origin_X: origin_X,
 				origin_Y: origin_Y,
 				currentPosition_X: origin_X,
@@ -299,11 +261,9 @@ class Renderer extends Component {
 
 		this.sk.draw = () => {
 
-			// console.log('FPS: '+ Math.round(this.sk.frameRate()))
+			// console.log('FPS: ' + Math.round(this.sk.frameRate()))
 
-			const { canvasWidth, 
-							canvasHeight, 
-							nextPosition_X, 
+			const { nextPosition_X, 
 							nextPosition_Y, 
 							currentPosition_X, 
 							currentPosition_Y, 
@@ -314,15 +274,15 @@ class Renderer extends Component {
 							origin_Y } = this.state,
 
 						{ easing,
-							endState,
-							gridDimensions,
+							steps,
 							stepNext,
-							stepCurrent } = this.props,
+							stepCurrent,
+							parseIndex } = this.props,
 
-						{ nodesTravelled,
-							nodesDuplicate,
-							pathsTravelled,
-							pathsDuplicate } = this.cache,
+						{ parsedDupNodes,
+							parsedNodes,
+							parsedDupPaths,
+							parsedPaths } = this.props.cache,
 
 						{ circleRadius,
 							triangleSize,
@@ -342,7 +302,7 @@ class Renderer extends Component {
 
       this.sk.clear().noFill()
 			
-			// turtle
+			// turtle - draw
 			const drawTurtle = (pos_X, pos_Y, rot, r , g, b, radius, weight) => {
 				const x1 = pos_X - (triangleSize/2)*cos(rot),
 							x2 = pos_X + (triangleSize/2)*cos(rot),
@@ -363,27 +323,6 @@ class Renderer extends Component {
 								)
 			}
 			
-			
-			// turtle - end state
-			if (endState) {
-
-				const x = (endState.x + gridDimensions / 2) * canvasWidth / gridDimensions
-				const y = (endState.y + gridDimensions / 2) * canvasHeight / gridDimensions
-
-				for (var i = 0; i < circleRadius; i += colorIncrement ) {
-					drawTurtle(
-						x, 
-						y, 
-						endState.rotation, 
-						15, 
-						15, 
-						15,
-						i,
-						3
-					)
-				}
-				
-			}
 			// turtle - current state
 			dy = nextPosition_Y - currentPosition_Y
 			dx = nextPosition_X - currentPosition_X
@@ -412,9 +351,10 @@ class Renderer extends Component {
 			}	
 
 			// travelled paths
-			if (pathsTravelled.length > 0) {
-				pathsTravelled.forEach((path) => {
-					this.sk.stroke(	152, 255, 152)
+			if (parsedPaths && parsedPaths.length > 0) {
+				parsedPaths.forEach((path) => {
+					if (path.index <= parseIndex - 1) {
+						this.sk.stroke(	152, 255, 152)
 								.strokeWeight(1)
 								.line(
 									path.x1,
@@ -422,19 +362,22 @@ class Renderer extends Component {
 									path.x2,
 									path.y2
 								)
+					}
 				})
 			}
 			// duplicate paths
-			if (pathsDuplicate.length > 0) {
-				pathsDuplicate.forEach((path) => {
-					this.sk.stroke(	249, 111, 97)
-								.strokeWeight(4)
-								.line(
-									path.x1,
-									path.y1,
-									path.x2,
-									path.y2
-								)
+			if (parsedDupPaths && parsedDupPaths.length > 0) {
+				parsedDupPaths.forEach((path) => {
+					if (path.index <= parseIndex - 1) {
+						this.sk.stroke(	249, 111, 97)
+									.strokeWeight(4)
+									.line(
+										path.x1,
+										path.y1,
+										path.x2,
+										path.y2
+									)
+					}
 				})
 			}
 
@@ -450,31 +393,35 @@ class Renderer extends Component {
 						)
 			
 			// travelled nodes
-			if (nodesTravelled.length > 0) {
-				nodesTravelled.forEach((node) => {
-					this.sk.stroke(	152, 255, 152)
-								.strokeWeight(1)
-								.fill(255, 255, 255)
-								.ellipse(
-									node.x,
-									node.y,
-									nodeRadiusUnique,
-									nodeRadiusUnique
-								)
+			if (parsedNodes && parsedNodes.length > 0) {
+				parsedNodes.forEach((node) => {
+					if (node.index <= parseIndex - 1) {
+						this.sk.stroke(	152, 255, 152)
+									.strokeWeight(1)
+									.fill(255, 255, 255)
+									.ellipse(
+										node.x,
+										node.y,
+										nodeRadiusUnique,
+										nodeRadiusUnique
+									)
+					}
 				})
 			}
 			// duplicate nodes
-			if (nodesDuplicate.length > 0) {
-				nodesDuplicate.forEach((node) => {
-					this.sk.stroke(	249, 111, 97)
-								.strokeWeight(3)
-								.fill(255, 255, 255)
-								.ellipse(
-									node.x,
-									node.y,
-									nodeRadiusDuplicate,
-									nodeRadiusDuplicate
-								)
+			if (parsedDupNodes && parsedDupNodes.length > 0) {
+				parsedDupNodes.forEach((node) => {
+					if (node.index <= parseIndex - 1) {
+						this.sk.stroke(	249, 111, 97)
+									.strokeWeight(3)
+									.fill(255, 255, 255)
+									.ellipse(
+										node.x,
+										node.y,
+										nodeRadiusDuplicate,
+										nodeRadiusDuplicate
+									)
+					}
 				})
       }
       
@@ -510,7 +457,7 @@ class Renderer extends Component {
       // account for rotations from 270 -> 0, 0 -> 270
 			let rotFactor = 0
 			drot = nextRotation - currentRotation
-			if (stepNext && stepCurrent) {
+			if (stepNext && steps[parseIndex-1]) {
 				if (stepCurrent.rotation === 270 && stepNext.rotation === 0) {
 					if (currentRotation >= 180) {
 						rotFactor = 360
@@ -530,11 +477,9 @@ class Renderer extends Component {
 			} 
 		
 			// console.log(rotFactor, currentRotation, nextRotation)
-		
+			
 			// update position
 			this.setState({
-				stepSizePixels_X: canvasWidth / gridDimensions,
-				stepSizePixels_Y: canvasHeight / gridDimensions,
 				currentRotation: currentRotation + drot * easing - rotFactor,
 				currentPosition_X: currentPosition_X + dx * easing,
 				currentPosition_Y: currentPosition_Y + dy * easing
