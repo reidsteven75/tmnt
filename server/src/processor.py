@@ -130,7 +130,7 @@ def process_char_data(char_list):
         max_coordinates['+x'] = position[0]
       if (position[1] < max_coordinates['-y']):
         max_coordinates['-y'] = position[1]
-      if (position[1] < max_coordinates['+y']):
+      if (position[1] > max_coordinates['+y']):
         max_coordinates['+y'] = position[1]
 
     # apply rotation to previous step state

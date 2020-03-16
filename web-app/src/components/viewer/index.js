@@ -56,7 +56,8 @@ class Viewer extends Component {
 			handleRendererUpdateDimensions,
 			cache,
 			handleSliderChange,
-			isAnimate
+			isAnimate,
+			viewerZoomConfig
 		} = this.props
 
 		let content = 
@@ -81,6 +82,7 @@ class Viewer extends Component {
 					parseIndex={parseIndex}
 					endState={endState}
 					isAnimate={isAnimate}
+					zoomConfig={viewerZoomConfig}
 				/>
 				
 			</React.Fragment>

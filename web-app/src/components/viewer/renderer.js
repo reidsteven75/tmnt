@@ -9,28 +9,6 @@ import { coordinatesToGridPixels } from '../../utils'
 
 class Renderer extends Component {
 
-	config = {
-		numGridLines: 10,
-		circleRadius: 25,
-		triangleSize: 20,
-		updateInterval: 500,
-		nodeRadiusUnique: 5,
-		nodeRadiusDuplicate: 10,
-		nodeRadiusOrigin: 25,
-    cooridinateHoverRadius: 20
-	}
-
-	// config = {
-	// 	numGridLines: 10,
-	// 	circleRadius: 6,
-	// 	triangleSize: 4,
-	// 	updateInterval: 500,
-	// 	nodeRadiusUnique: 1,
-	// 	nodeRadiusDuplicate: 2,
-	// 	nodeRadiusOrigin: 10,
-  //   cooridinateHoverRadius: 1
-	// }
-
 	style = {
 		wrapper: {
 			padding: 15,
@@ -108,7 +86,6 @@ class Renderer extends Component {
 
 					{ gridDimensions,
 						stepNext,
-						stepCurrent,
 						parseIndex,
 						isAnimate,
 						steps } = this.props,
@@ -186,10 +163,10 @@ class Renderer extends Component {
         if (dist(
                 mouseX, 
                 mouseY, 
-                grid_X + 10, 
-                grid_Y + 10) 
+                grid_X, 
+                grid_Y) 
                 < 
-                this.config.cooridinateHoverRadius) {
+                5) {
 
           cooridinate = {
             render: {
@@ -284,11 +261,11 @@ class Renderer extends Component {
 							parsedDupPaths,
 							parsedPaths } = this.props.cache,
 
-						{ circleRadius,
-							triangleSize,
+						{ turtleCircleRadius,
+							turtleTriangleSize,
 							nodeRadiusUnique,
 							nodeRadiusDuplicate,
-							nodeRadiusOrigin } = this.config,
+							nodeRadiusOrigin } = this.props.zoomConfig,
 						
 						cos = (degrees) => { return(Math.cos(degrees * Math.PI / 180).toFixed(2)) },
 						sin = (degrees) => { return(Math.sin(degrees * Math.PI / 180).toFixed(2)) }
@@ -302,53 +279,6 @@ class Renderer extends Component {
 
       this.sk.clear().noFill()
 			
-			// turtle - draw
-			const drawTurtle = (pos_X, pos_Y, rot, r , g, b, radius, weight) => {
-				const x1 = pos_X - (triangleSize/2)*cos(rot),
-							x2 = pos_X + (triangleSize/2)*cos(rot),
-							x3 = pos_X + triangleSize*sin(rot),
-							y1 = pos_Y - (triangleSize/2)*sin(rot),
-							y2 = pos_Y + (triangleSize/2)*sin(rot),
-							y3 = pos_Y - triangleSize*cos(rot)
-
-				this.sk.stroke(r,g,b)
-								.noFill()
-								.strokeWeight(3)
-								.triangle(x1,y1,x2,y2,x3,y3)
-								.ellipse(
-									pos_X,
-									pos_Y,
-									radius,
-									radius
-								)
-			}
-			
-			// turtle - current state
-			dy = nextPosition_Y - currentPosition_Y
-			dx = nextPosition_X - currentPosition_X
-			for (var i = 0; i < circleRadius; i += colorIncrement ) {
-
-				// determine if moving
-				if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
-					colorIntensity = Math.floor(Math.random() * 5 * Math.max(Math.abs(dx),Math.abs(dy))) 
-					colorIncrement = 2
-					strokeWeight = 1
-				}
-				else { 
-					colorIncrement = 5
-					strokeWeight = 3
-				}
-				drawTurtle(
-					currentPosition_X, 
-					currentPosition_Y, 
-					currentRotation, 
-					37 + colorIntensity, 
-					175 + colorIntensity, 
-					180 + colorIntensity,
-					i,
-					strokeWeight
-				)
-			}	
 
 			// travelled paths
 			if (parsedPaths && parsedPaths.length > 0) {
@@ -370,7 +300,7 @@ class Renderer extends Component {
 				parsedDupPaths.forEach((path) => {
 					if (path.index <= parseIndex - 1) {
 						this.sk.stroke(	249, 111, 97)
-									.strokeWeight(4)
+									.strokeWeight(2)
 									.line(
 										path.x1,
 										path.y1,
@@ -380,17 +310,6 @@ class Renderer extends Component {
 					}
 				})
 			}
-
-			// origin node
-			this.sk.stroke(	34, 150, 243)
-						.noFill()
-						.strokeWeight(1)
-						.ellipse(
-							origin_X,
-							origin_Y,
-							nodeRadiusOrigin,
-							nodeRadiusOrigin
-						)
 			
 			// travelled nodes
 			if (parsedNodes && parsedNodes.length > 0) {
@@ -413,7 +332,7 @@ class Renderer extends Component {
 				parsedDupNodes.forEach((node) => {
 					if (node.index <= parseIndex - 1) {
 						this.sk.stroke(	249, 111, 97)
-									.strokeWeight(3)
+									.strokeWeight(2)
 									.fill(255, 255, 255)
 									.ellipse(
 										node.x,
@@ -423,7 +342,66 @@ class Renderer extends Component {
 									)
 					}
 				})
-      }
+			}
+
+			// origin node
+			this.sk.stroke(	34, 150, 243)
+						.noFill()
+						.strokeWeight(1)
+						.ellipse(
+							origin_X,
+							origin_Y,
+							nodeRadiusOrigin,
+							nodeRadiusOrigin
+						)
+			
+			// turtle - draw
+			const drawTurtle = (pos_X, pos_Y, rot, r , g, b, radius, weight) => {
+				const x1 = pos_X - (turtleTriangleSize/2)*cos(rot),
+							x2 = pos_X + (turtleTriangleSize/2)*cos(rot),
+							x3 = pos_X + turtleTriangleSize*sin(rot),
+							y1 = pos_Y - (turtleTriangleSize/2)*sin(rot),
+							y2 = pos_Y + (turtleTriangleSize/2)*sin(rot),
+							y3 = pos_Y - turtleTriangleSize*cos(rot)
+
+				this.sk.stroke(r,g,b)
+								.noFill()
+								.strokeWeight(3)
+								.triangle(x1,y1,x2,y2,x3,y3)
+								.ellipse(
+									pos_X,
+									pos_Y,
+									radius,
+									radius
+								)
+			}
+			
+			// turtle - current state
+			dy = nextPosition_Y - currentPosition_Y
+			dx = nextPosition_X - currentPosition_X
+			for (var i = 0; i < turtleCircleRadius; i += colorIncrement ) {
+
+				// determine if moving
+				if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
+					colorIntensity = Math.floor(Math.random() * 5 * Math.max(Math.abs(dx),Math.abs(dy))) 
+					colorIncrement = 2
+					strokeWeight = 1
+				}
+				else { 
+					colorIncrement = 5
+					strokeWeight = 3
+				}
+				drawTurtle(
+					currentPosition_X, 
+					currentPosition_Y, 
+					currentRotation, 
+					37 + colorIntensity, 
+					175 + colorIntensity, 
+					180 + colorIntensity,
+					i,
+					strokeWeight
+				)
+			}	
       
       // hovered cooridinte
       if (cooridinateMouseOver) {
@@ -433,8 +411,8 @@ class Renderer extends Component {
 								.ellipse(
 									cooridinateMouseOver.render.x,
 									cooridinateMouseOver.render.y,
-									10,
-									10
+									8,
+									8
                 )
                 .fill(128, 128, 128, 200)
                 .rect(

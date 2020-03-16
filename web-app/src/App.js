@@ -64,6 +64,29 @@ const config = {
         label: 'Slow'
       }
     }
+  },
+  zoom: {
+    min: {
+      turtleCircleRadius: 25,
+      turtleTriangleSize: 20,
+      nodeRadiusUnique: 5,
+      nodeRadiusDuplicate: 10,
+      nodeRadiusOrigin: 25
+    },
+    mid: {
+      turtleCircleRadius: 15,
+      turtleTriangleSize: 11,
+      nodeRadiusUnique: 2,
+      nodeRadiusDuplicate: 4,
+      nodeRadiusOrigin: 15
+    },
+    max: {
+      turtleCircleRadius: 6,
+      turtleTriangleSize: 4,
+      nodeRadiusUnique: 1,
+      nodeRadiusDuplicate: 2,
+      nodeRadiusOrigin: 10
+    }
   }
 }
 
@@ -100,11 +123,11 @@ class App extends Component {
       showErrorDialog: false,
       errorMessage: null,
       rendererWidth: null,
-      rendererHeight: null
+      rendererHeight: null,
+      viewerZoomConfig: config.zoom['min']
     }
 
     this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
-    // this._handleAnimateReset = this._handleAnimateReset.bind(this)
 		this._handleAnimateClicked = this._handleAnimateClicked.bind(this)
     this._handleSpeedChange = this._handleSpeedChange.bind(this)
     this._handleLoadClicked = this._handleLoadClicked.bind(this)
@@ -244,12 +267,15 @@ class App extends Component {
         let res = await getFile()
         const roundedGridDim = 2 * Math.round(res.fileData.gridDimension + config.gridPadding / 2)
 
-        console.log(res)
-
         this.cache.parsedDupNodes = this.parseNodes(res.fileData.dupNodes, roundedGridDim)
         this.cache.parsedNodes = this.parseNodes(res.fileData.nodes, roundedGridDim)
         this.cache.parsedDupPaths = this.parsePaths(res.fileData.dupPaths, roundedGridDim)
         this.cache.parsedPaths = this.parsePaths(res.fileData.paths, roundedGridDim)
+
+        let viewerZoomConfig
+        if (roundedGridDim <= 50) { viewerZoomConfig = config.zoom['min'] }
+        else if (roundedGridDim > 50 <= 80) { viewerZoomConfig = config.zoom['mid'] }
+        else if (roundedGridDim > 80) { viewerZoomConfig = config.zoom['max'] }
 
         this.parserReset()
         this.setState({
@@ -263,7 +289,8 @@ class App extends Component {
           stepNext: null,
           stepCount: res.fileData.steps.length - 1,
           parseIndex: res.fileData.steps.length,
-          isAnimate: false
+          isAnimate: false,
+          viewerZoomConfig: viewerZoomConfig
         }) 
       } 
       catch (error) {
@@ -342,7 +369,8 @@ class App extends Component {
             isLoadingFile,
             steps,
             endState,
-            gridDimensions } = this.state
+            gridDimensions,
+            viewerZoomConfig } = this.state
 
     const easing = config.simulateSpeed[simulateSpeed].easing
 
@@ -352,7 +380,7 @@ class App extends Component {
         <div className='App'>
           <Header/>
           <Grid container spacing={0}>
-            <Grid item xs={2} style={{width:'20%'}}>
+            <Grid item xs={2}>
               <Sidebar  
                 isLoadingFile={isLoadingFile}
                 isAnimate={isAnimate}
@@ -366,7 +394,7 @@ class App extends Component {
                 endState={endState}
               />
             </Grid>
-            <Grid item xs={10} style={{width:'80%'}}>
+            <Grid item xs={10}>
               <Viewer
                 handleSliderChange={this._handleViewerSliderChange}
                 handleRendererUpdateDimensions={this._handleRendererUpdateDimensions}
@@ -382,6 +410,7 @@ class App extends Component {
                 parseIndex={parseIndex}
                 endState={endState}
                 isAnimate={isAnimate}
+                viewerZoomConfig={viewerZoomConfig}
               />
             </Grid>
           </Grid>
