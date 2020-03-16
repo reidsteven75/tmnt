@@ -1,5 +1,7 @@
 export const config = {
+  sidebarWidth: 285,
   gridPadding: 5,
+  rendererFPS: 30,
   simulateSpeed: {
     fast: {
       updateRate: 1,
@@ -28,22 +30,22 @@ export const config = {
   },
   zoom: {
     min: {
-      turtleCircleRadius: 25,
-      turtleTriangleSize: 20,
+      turtleCircleRadius: 15,
+      turtleTriangleSize: 15,
       nodeRadiusUnique: 5,
       nodeRadiusDuplicate: 10,
       nodeRadiusOrigin: 25
     },
     mid: {
-      turtleCircleRadius: 15,
-      turtleTriangleSize: 11,
+      turtleCircleRadius: 8,
+      turtleTriangleSize: 8,
       nodeRadiusUnique: 2,
       nodeRadiusDuplicate: 4,
       nodeRadiusOrigin: 15
     },
     max: {
-      turtleCircleRadius: 6,
-      turtleTriangleSize: 4,
+      turtleCircleRadius: 3,
+      turtleTriangleSize: 3,
       nodeRadiusUnique: 1,
       nodeRadiusDuplicate: 2,
       nodeRadiusOrigin: 10

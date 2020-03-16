@@ -5,7 +5,6 @@ import Typography from '@material-ui/core/Typography'
 
 class Header extends Component {
 
-
 	// lifecycle
 	// ---------
 	constructor(props) {
@@ -15,11 +14,15 @@ class Header extends Component {
 	// render
 	// ------
   render() {
+
+		const { style } = this.props
+
 		return (
 			<div>
 				<AppBar 
 					position='static'
 					color='inherit'
+					style={style}
 				>
 					<Toolbar>
 						<Typography 

@@ -21,9 +21,11 @@ class Sidebar extends Component {
 
 	style = {
 		wrapper: {
-			padding: 15,
+			marginTop: 80,
 			height: '100%',
-			borderRight: '1px solid rgba(255, 255, 255, 0.12)'
+		},
+		section: {
+			padding: 15
 		},
 		button: {
 			width: '100%'
@@ -37,13 +39,8 @@ class Sidebar extends Component {
 		}
 	}
 
-	config = {
-
-	}
-	
 	// lifecycle
 	// ---------
-
 	constructor(props) {
 		super(props)
 
@@ -55,7 +52,6 @@ class Sidebar extends Component {
 
 	// functions
 	// ---------
-
 	valuetext(value) {
 		return `${value}`
 	}
@@ -74,9 +70,7 @@ class Sidebar extends Component {
 
 	// render
 	// ------
-
   render() {
-
 		const { stepCurrent,
 						stepNext,
 						config,
@@ -124,101 +118,100 @@ class Sidebar extends Component {
 		return (
 			<div style={this.style.wrapper}>
 
-				<Button
-					variant='outlined'
-					color='primary'
-					style={this.style.button}
-					startIcon={isLoadingFile ? null : <PublishIcon />}
-					onClick={this.handleLoadClicked}
-					disabled={isLoadingFile}
-				>
-					{isLoadingFile ? <CircularProgress size={24}/> : 'Load'}
-				</Button>
+				<section style={this.style.section}>
+					<Button
+						variant='outlined'
+						color='primary'
+						style={this.style.button}
+						startIcon={isLoadingFile ? null : <PublishIcon />}
+						onClick={this.handleLoadClicked}
+						disabled={isLoadingFile}
+					>
+						{isLoadingFile ? <CircularProgress size={24}/> : 'Load'}
+					</Button>
+					<br/><br/>
+					<Typography color='textSecondary' noWrap={true}>
+						{ fileNameLoaded ? fileNameLoaded : 'no file loaded' }
+					</Typography>
+				</section>
 
-				<br/><br/>
-				<Typography color='textSecondary' noWrap={true}>
-					{ fileNameLoaded ? fileNameLoaded : 'no file loaded' }
-				</Typography>
+				<Divider variant='fullWidth' />
 
-				<br/>
+				<section style={this.style.section}>
+					<br/>
+					<Button
+						variant='outlined'
+						color={isAnimate ? 'secondary' : 'primary'}
+						style={this.style.button}
+						onClick={this.handleAnimateClicked}
+						disabled={fileNameLoaded ? false : true}
+						startIcon={<PlayCircleOutlineIcon/>}
+					>
+						Animate
+					</Button>
+					<br/><br/>
+					<Slider
+						defaultValue={1}
+						style={this.style.slider}
+						getAriaValueText={this.valuetext}
+						aria-labelledby='discrete-slider-always'
+						min={0}
+						max={2}
+						step={1}
+						disabled={fileNameLoaded ? false : true}
+						marks={marks}
+						valueLabelDisplay='off'
+						onChangeCommitted={this.handleSpeedChange}
+					/>
+					<br/>
+				</section>
+
 				<Divider variant='fullWidth' />
 				<br/>
 
-				<Button
-					variant='outlined'
-					color={isAnimate ? 'secondary' : 'primary'}
-					style={this.style.button}
-					onClick={this.handleAnimateClicked}
-					disabled={fileNameLoaded ? false : true}
-					startIcon={<PlayCircleOutlineIcon/>}
-				>
-					Animate
-				</Button>
-
-				<br/><br/>
-
-				<Slider
-					defaultValue={1}
-					style={this.style.slider}
-					getAriaValueText={this.valuetext}
-					aria-labelledby='discrete-slider-always'
-					min={0}
-					max={2}
-					step={1}
-					disabled={fileNameLoaded ? false : true}
-					marks={marks}
-					valueLabelDisplay='off'
-					onChangeCommitted={this.handleSpeedChange}
-				/>
-
-				<br/><br/>
-
-				<Divider variant='fullWidth' />
-				<br/>
-
-				<Card>
-     			<CardContent>
-					 	<Typography color='textPrimary' align='left'>Leonardo</Typography>
-						<br/>
-						<Grid container spacing={0}>
-							<Grid item xs={6}>
-								<img 
-									src={require('../../images/leonardo.png')}
-									style={this.style.avatar}
-								/>
+				<section style={this.style.section}>
+					<Card>
+						<CardContent>
+							<Typography color='textPrimary' align='left'>Leonardo</Typography>
+							<br/>
+							<Grid container spacing={0}>
+								<Grid item xs={6}>
+									<img 
+										src={require('../../images/leonardo.png')}
+										style={this.style.avatar}
+									/>
+								</Grid>
+								<Grid item xs={6}>
+									<Typography color='textSecondary'>Action</Typography>
+									<Typography variant='h3' color='textPrimary'>{char}</Typography>
+								</Grid>
 							</Grid>
-							<Grid item xs={6}>
-								<Typography color='textSecondary'>Action</Typography>
-								<Typography color='textPrimary'>{char}</Typography>
-							</Grid>
-						</Grid>
-					</CardContent>
-				</Card>
-
-				<br/>
-
-				<TableContainer component={Paper}>
-					<Table aria-label='simple table'>
-						<TableHead>
-							<TableRow>
-								<TableCell>State</TableCell>
-								<TableCell align='center'>Position</TableCell>
-								<TableCell align='center'>Rotation</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{rows.map(row => (
-								<TableRow key={row.state}>
-									<TableCell component='th' scope='row'>
-										{row.state}
-									</TableCell>
-									<TableCell align='center'>{row.position}</TableCell>
-									<TableCell align='center'>{row.rotation}</TableCell>
+						</CardContent>
+					</Card>
+					<br/>
+					<TableContainer component={Paper}>
+						<Table aria-label='simple table'>
+							<TableHead>
+								<TableRow>
+									<TableCell>State</TableCell>
+									<TableCell align='center'>Position</TableCell>
+									<TableCell align='center'>Rotation</TableCell>
 								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</TableContainer>
+							</TableHead>
+							<TableBody>
+								{rows.map(row => (
+									<TableRow key={row.state}>
+										<TableCell component='th' scope='row'>
+											{row.state}
+										</TableCell>
+										<TableCell align='center'>{row.position}</TableCell>
+										<TableCell align='center'>{row.rotation}</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</TableContainer>
+				</section>
 
 				<br/>
 				<Divider variant='fullWidth' />

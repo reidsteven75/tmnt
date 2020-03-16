@@ -50,7 +50,8 @@ class Viewer extends Component {
 			cache,
 			handleSliderChange,
 			isAnimate,
-			viewerZoomConfig
+			viewerZoomConfig,
+			fps
 		} = this.props
 
     return (
@@ -65,6 +66,7 @@ class Viewer extends Component {
 				/>
 				<Renderer
 					cache={cache}
+					fps={fps}
 					handleRendererUpdateDimensions={handleRendererUpdateDimensions}
 					easing={easing}
 					gridDimensions={gridDimensions}

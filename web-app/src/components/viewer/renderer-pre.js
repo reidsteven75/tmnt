@@ -20,26 +20,18 @@ class Renderer extends Component {
 	style = {
 		wrapper: {
 			padding: 15,
-			width: ' 100%',
+			height: '100%',
 			margin: 'auto'
 		},
-		sketchAreaGrid: {
+		sketchArea: {
 			border: '1px solid black',
 			height: '80vh',
-			width: `calc(96% - ${285}px)`,
-			margin: 'auto',
-			position: 'fixed',
-			top: 170,
-			left: 320
+			margin: 'auto'
 		},
 		sketchAreaTurtle: {
-			border: '1px solid gray',
+			border: '1px solid black',
 			height: '80vh',
-			width: `calc(96% - ${285}px)`,
-			margin: 'auto',
-			position: 'fixed',
-			top: 170,
-			left: 320
+			margin: 'auto'
 		}
 	}
 
@@ -64,34 +56,18 @@ class Renderer extends Component {
 			cooridinateMouseOver: null,
 			isReset: false
 		}
-		this.sketchRefGrid = React.createRef()
-		this.sketchRefTurtle = React.createRef()
+		this.sketchRef = React.createRef()
 	}
 
 	componentDidMount() {
-		window.addEventListener('mousemove', this.handleMouseMove.bind(this))
-		
-		this.s_grid = (sk) => {  
-			this.sk_grid = sk
-			this.initP5_grid()
+    window.addEventListener('mousemove', this.handleMouseMove.bind(this))
+		this.s = (sk) => {  
+			this.sk = sk
+			this.initP5()
 		}
-		this.p5_grid = new p5(this.s_grid)
-		this.p5_grid.disableFriendlyErrors = true
-
-		this.s_turtle = (sk) => {  
-			this.sk_turtle = sk
-			this.initP5_turtle()
-		}
-		this.p5_turtle = new p5(this.s_turtle)
-		this.p5_turtle.disableFriendlyErrors = true
-
+		this.p5 = new p5(this.s)
+		this.p5.disableFriendlyErrors = true
 		this.setState({loading:false})
-
-		// FPS Logging
-		// -----------
-		// setInterval(() => {
-		// 	console.log('FPS (T, G): ', Math.round(this.sk_turtle.frameRate()), Math.round(this.sk_grid.frameRate()))
-		// }, 100)
 	}	
 
 	componentDidUpdate(prevProps) {
@@ -120,7 +96,6 @@ class Renderer extends Component {
 				currentRotation: 0,
 				nextRotation: 0
 			})
-			
 		}
 
 		// if slider is moving, calculate next pixel position
@@ -137,8 +112,6 @@ class Renderer extends Component {
 				nextPosition_X: pixelsNext.x,
 				nextPosition_Y: pixelsNext.y,
 				nextRotation: steps[parseIndex - 1].rotation,
-			}, () => {
-				this.redrawGrid()
 			})
 		}
 
@@ -156,21 +129,15 @@ class Renderer extends Component {
 				nextPosition_X: pixelsNext.x,
 				nextPosition_Y: pixelsNext.y,
 				nextRotation: stepNext.rotation,
-			}, () => {
-				this.redrawGrid()
 			})
 		}
 	}
 
 	// functions
 	// ---------
-
-	redrawGrid() {
-		this.sk_grid.redraw(1)
-	}
   
   handleMouseMove() {
-    const { mouseX, mouseY, dist } = this.p5_turtle
+    const { mouseX, mouseY, dist } = this.p5
     const { gridDimensions } = this.props
     const { canvasWidth, canvasHeight } = this.state
 		let cooridinate = null
@@ -199,24 +166,19 @@ class Renderer extends Component {
     this.setState({
 			cooridinateMouseOver: cooridinate
     })
-	}
+  }
 
-	// -------------------------
-	// GRID
-	// -------------------------
-
-	initP5_grid() {
-		this.sk_grid.setup = () => {
-			 const sketchRef = this.sketchRefGrid.current
+	initP5() {
+		this.sk.setup = () => {
+			 const sketchRef = this.sketchRef.current
 			 const origin_X = sketchRef.offsetWidth/2
 			 const origin_Y = sketchRef.offsetHeight/2
 			 const canvasHeight = sketchRef.offsetHeight
 			 const canvasWidth = sketchRef.offsetWidth
  
-			 let canvas = this.sk_grid.createCanvas(canvasWidth, canvasHeight)
+			 let canvas = this.sk.createCanvas(canvasWidth, canvasHeight)
 			 canvas.parent(sketchRef.id)
-			 this.sk_grid.frameRate(this.props.fps)
-			 this.sk_grid.noLoop()
+			 this.sk.frameRate(30)
  
 			 this.props.handleRendererUpdateDimensions(
 				 canvasWidth,
@@ -227,33 +189,55 @@ class Renderer extends Component {
 				 canvasWidth: canvasWidth,
 				 canvasHeight: canvasHeight,
 				 origin_X: origin_X,
-				 origin_Y: origin_Y
+				 origin_Y: origin_Y,
+				 currentPosition_X: origin_X,
+				 currentPosition_Y: origin_Y,
+				 nextPosition_X: origin_X,
+				 nextPosition_Y: origin_Y,
 			 })
 		}
 
-		this.sk_grid.draw = () => {
-			const { origin_X,
+		this.sk.draw = () => {
+			// console.log('FPS: ' + Math.round(this.sk.frameRate()))
+			const { nextPosition_X, 
+							nextPosition_Y, 
+							currentPosition_X, 
+							currentPosition_Y, 
+							currentRotation,
+              nextRotation,
+							cooridinateMouseOver,
+							origin_X,
 							origin_Y } = this.state,
 
-						{ parseIndex } = this.props,
+						{ easing,
+							steps,
+							stepNext,
+							stepCurrent,
+							parseIndex } = this.props,
 
 						{ parsedDupNodes,
 							parsedNodes,
 							parsedDupPaths,
 							parsedPaths } = this.props.cache,
 
-						{ nodeRadiusUnique,
+						{ turtleCircleRadius,
+							turtleTriangleSize,
+							nodeRadiusUnique,
 							nodeRadiusDuplicate,
 							nodeRadiusOrigin } = this.props.zoomConfig
 
-      this.sk_grid.clear().noFill()
+			let	dx, 
+					dy,
+					drot
+
+      this.sk.clear().noFill()
 			
 			// travelled paths
 			if (parsedPaths && parsedPaths.length > 0) {
 				parsedPaths.forEach((path) => {
 					if (path.index <= parseIndex - 1) {
-						drawPathUnique(this.sk_grid,
-															this.p5_grid,
+						drawPathUnique(this.sk,
+															this.p5,
 															path.x1,
 															path.y1,
 															path.x2,
@@ -265,8 +249,8 @@ class Renderer extends Component {
 			if (parsedDupPaths && parsedDupPaths.length > 0) {
 				parsedDupPaths.forEach((path) => {
 					if (path.index <= parseIndex - 1) {
-						drawPathDuplicate(this.sk_grid,
-															this.p5_grid,
+						drawPathDuplicate(this.sk,
+															this.p5,
 															path.x1,
 															path.y1,
 															path.x2,
@@ -279,8 +263,8 @@ class Renderer extends Component {
 			if (parsedNodes && parsedNodes.length > 0) {
 				parsedNodes.forEach((node) => {
 					if (node.index <= parseIndex - 1) {
-						drawNodeUnique(this.sk_grid,
-													this.p5_grid,
+						drawNodeUnique(this.sk,
+													this.p5,
 													node.x,
 													node.y,
 													nodeRadiusUnique)
@@ -291,8 +275,8 @@ class Renderer extends Component {
 			if (parsedDupNodes && parsedDupNodes.length > 0) {
 				parsedDupNodes.forEach((node) => {
 					if (node.index <= parseIndex - 1) {
-						drawNodeDuplicate(this.sk_grid,
-														this.p5_grid,
+						drawNodeDuplicate(this.sk,
+														this.p5,
 														node.x,
 														node.y,
 														nodeRadiusDuplicate)
@@ -301,68 +285,17 @@ class Renderer extends Component {
 			}
 
 			// origin node
-			drawNodeOrigin(this.sk_grid,
-										this.p5_grid,
+			drawNodeOrigin(this.sk,
+										this.p5,
 										origin_X,
 										origin_Y,
 										nodeRadiusOrigin)
-		}
-	}
-
-	// -------------------------
-	// TURTLE
-	// -------------------------
-
-	initP5_turtle() {
-
-		this.sk_turtle.setup = () => {
-			 const sketchRef = this.sketchRefTurtle.current
-			 const origin_X = sketchRef.offsetWidth/2
-			 const origin_Y = sketchRef.offsetHeight/2
-			 const canvasHeight = sketchRef.offsetHeight
-			 const canvasWidth = sketchRef.offsetWidth
- 
-			 let canvas = this.sk_turtle.createCanvas(canvasWidth, canvasHeight)
-			 canvas.parent(sketchRef.id)
-			 this.sk_turtle.frameRate(this.props.fps)
- 
-			 this.setState({
-				 currentPosition_X: origin_X,
-				 currentPosition_Y: origin_Y,
-				 nextPosition_X: origin_X,
-				 nextPosition_Y: origin_Y,
-			 })
-		}
-
-		this.sk_turtle.draw = () => {
-			const { nextPosition_X, 
-							nextPosition_Y, 
-							currentPosition_X, 
-							currentPosition_Y, 
-							currentRotation,
-              nextRotation,
-							cooridinateMouseOver } = this.state,
-
-						{ easing,
-							steps,
-							stepNext,
-							stepCurrent,
-							parseIndex } = this.props,
-
-						{ turtleCircleRadius,
-							turtleTriangleSize } = this.props.zoomConfig
-
-			let	dx, 
-					dy,
-					drot
-
-      this.sk_turtle.clear().noFill()
 			
 			// turtle
 			dy = nextPosition_Y - currentPosition_Y
-			dx = nextPosition_X - currentPosition_X
-			drawTurtle(this.sk_turtle, 
-								this.p5_turtle,
+  		dx = nextPosition_X - currentPosition_X
+			drawTurtle(this.sk, 
+								this.p5,
 								dy,
 								dx,
 								currentPosition_X,
@@ -373,8 +306,8 @@ class Renderer extends Component {
       
       // hovered cooridinte
       if (cooridinateMouseOver) { 
-				drawCooridinate(this.sk_turtle, 
-												this.p5_turtle, 
+				drawCooridinate(this.sk, 
+												this.p5, 
 												cooridinateMouseOver) 
 			}
 			
@@ -417,8 +350,8 @@ class Renderer extends Component {
 			<div style={this.style.wrapper}>
 				<div 
 					id='sketch-area-grid' 
-					ref={this.sketchRefGrid}
-					style={this.style.sketchAreaGrid}
+					ref={this.sketchRef}
+					style={this.style.sketchArea}
 				>
 				</div>
 				<div 

@@ -150,7 +150,8 @@ export const drawTurtle =
           y3 = pos_Y - turtleTriangleSize*cos(rot)
 
     sk.stroke(r,g,b)
-      .strokeWeight(3)
+      .fill(r,g,b)
+      .strokeWeight(1)
       .triangle(x1,y1,x2,y2,x3,y3)
       .ellipse(
         pos_X,
@@ -164,26 +165,26 @@ export const drawTurtle =
       colorIncrement,
       strokeWeight
 
-  for (var i = 0; i < turtleCircleRadius; i += colorIncrement ) {
-    // determine if moving
-    if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
-      colorIntensity = Math.floor(Math.random() * 5 * Math.max(Math.abs(dx),Math.abs(dy))) 
-      colorIncrement = 2
-      strokeWeight = 1
-    }
-    else { 
-      colorIncrement = 5
-      strokeWeight = 3
-    }
-    draw(
-      currentPosition_X, 
-      currentPosition_Y, 
-      currentRotation, 
-      37 + colorIntensity, 
-      175 + colorIntensity, 
-      180 + colorIntensity,
-      i,
-      strokeWeight
-    )
+  // is moving
+  if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
+    colorIntensity = Math.floor(Math.random() * 5 * Math.max(Math.abs(dx),Math.abs(dy))) 
+    colorIncrement = 2
+    strokeWeight = 1
   }
+  // still
+  else { 
+    colorIntensity = 1
+    colorIncrement = 5
+    strokeWeight = 3
+  }
+  draw(
+    currentPosition_X, 
+    currentPosition_Y, 
+    currentRotation, 
+    37 + colorIntensity, 
+    175 + colorIntensity, 
+    180 + colorIntensity,
+    turtleCircleRadius,
+    strokeWeight
+  )
 }

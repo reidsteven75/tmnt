@@ -4,20 +4,38 @@ import './App.css'
 import { MuiThemeProvider } from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import Grid from '@material-ui/core/Grid'
+import Drawer from '@material-ui/core/Drawer'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 
+import { coordinatesToGridPixels } from './utils'
 import { theme } from './theme.js'
 import { config } from './config.js'
-import { coordinatesToGridPixels } from './utils'
+
 import { getFile } from './api-adapter'
 import Header from './components/header'
 import Viewer from './components/viewer'
 import Sidebar from './components/sidebar'
 
 class App extends Component {
+
+  style = {
+    sidebar: {
+      width: config.sidebarWidth,
+      flexShrink: 0
+    },
+    main: {
+      width: `calc(100% - ${config.sidebarWidth}px)`,
+      marginLeft: config.sidebarWidth,
+      flexGrow: 1
+    },
+    header: {
+      position: 'relative',
+      zIndex: 10000
+    }
+  }
 
   cache = {
     parserFunction: null,
@@ -51,16 +69,21 @@ class App extends Component {
       simulateSpeed: 'mid'
     }
 
+    this.config = config
+
     this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
 		this._handleAnimateClicked = this._handleAnimateClicked.bind(this)
     this._handleSpeedChange = this._handleSpeedChange.bind(this)
     this._handleLoadClicked = this._handleLoadClicked.bind(this)
     this._handleViewerSliderChange = this._handleViewerSliderChange.bind(this)
     this.handleErrorDialogClose = this.handleErrorDialogClose.bind(this)
+
   }
 
   // functions
   // ---------
+
+
   parserAdjustSpeed() {
     clearInterval(this.cache.parserFunction)
     this.parserStart()
@@ -155,6 +178,21 @@ class App extends Component {
     return parsed
   }
 
+  showErrorDialog(error) {
+    this.setState({
+      isShowErrorDialog: true,
+      errorMessage: error
+    })
+  }
+
+  // event handlers
+  // --------------
+  handleErrorDialogClose() {
+    this.setState({
+      isShowErrorDialog: false,
+    })
+  }
+
   _handleViewerSliderChange(value) {
     this.parserStop()
     this.setState({
@@ -211,21 +249,6 @@ class App extends Component {
       }
     })
     
-  }
-
-  showErrorDialog(error) {
-    this.setState({
-      isShowErrorDialog: true,
-      errorMessage: error
-    })
-  }
-
-  // event handlers
-  // --------------
-  handleErrorDialogClose() {
-    this.setState({
-      isShowErrorDialog: false,
-    })
   }
 
 	_handleAnimateClicked() {
@@ -295,42 +318,47 @@ class App extends Component {
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
         <div className='App'>
-          <Header/>
-          <Grid container spacing={0}>
-            <Grid item xs={2}>
-              <Sidebar  
-                config={config}
-                isLoadingFile={isLoadingFile}
-                isAnimate={isAnimate}
-                fileNameLoaded={fileNameLoaded}
-                stepCurrent={stepCurrent}
-                stepNext={stepNext}
-                endState={endState}
-                handleAnimateClicked={this._handleAnimateClicked}
-                handleSpeedChange={this._handleSpeedChange}
-                handleLoadClicked={this._handleLoadClicked}
-              />
-            </Grid>
-            <Grid item xs={10}>
-              <Viewer
-                cache={this.cache}
-                viewerZoomConfig={viewerZoomConfig}
-                isAnimate={isAnimate}
-                easing={easing}
-                gridDimensions={gridDimensions}
-                fileNameLoaded={fileNameLoaded}
-                steps={steps}
-                stepCurrent={stepCurrent}
-                stepPrevious={stepPrevious}
-                stepNext={stepNext}
-                stepCount={stepCount}
-                parseIndex={parseIndex}
-                endState={endState}
-                handleSliderChange={this._handleViewerSliderChange}
-                handleRendererUpdateDimensions={this._handleRendererUpdateDimensions}
-              />
-            </Grid>
-          </Grid>
+          <Header
+            style={this.style.header}
+          />
+          <Drawer
+            style={this.style.sidebar}
+            variant='permanent'
+            anchor='left'
+          >
+            <Sidebar  
+              config={config}
+              isLoadingFile={isLoadingFile}
+              isAnimate={isAnimate}
+              fileNameLoaded={fileNameLoaded}
+              stepCurrent={stepCurrent}
+              stepNext={stepNext}
+              endState={endState}
+              handleAnimateClicked={this._handleAnimateClicked}
+              handleSpeedChange={this._handleSpeedChange}
+              handleLoadClicked={this._handleLoadClicked}
+            />
+          </Drawer>
+          <main style={this.style.main}>
+            <Viewer
+              cache={this.cache}
+              fps={config.rendererFPS}
+              viewerZoomConfig={viewerZoomConfig}
+              isAnimate={isAnimate}
+              easing={easing}
+              gridDimensions={gridDimensions}
+              fileNameLoaded={fileNameLoaded}
+              steps={steps}
+              stepCurrent={stepCurrent}
+              stepPrevious={stepPrevious}
+              stepNext={stepNext}
+              stepCount={stepCount}
+              parseIndex={parseIndex}
+              endState={endState}
+              handleSliderChange={this._handleViewerSliderChange}
+              handleRendererUpdateDimensions={this._handleRendererUpdateDimensions}
+            />
+          </main>
           
           <Dialog 
             aria-labelledby='dialog-title' 

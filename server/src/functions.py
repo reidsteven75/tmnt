@@ -1,6 +1,7 @@
 import os
 import utils
 
+# -------------------------------------------------------
 def populateOrigin(processed):
   processed['steps'][0] = {
     'char': 'n/a',
@@ -10,12 +11,14 @@ def populateOrigin(processed):
     'dupPath': False
   }
 
+# -------------------------------------------------------
 def populateStep(steps, i, char):
   steps[i] = steps[i-1].copy()
   steps[i]['char'] = char
   steps[i]['dupNode'] = False
   steps[i]['dupPath'] = False
 
+# -------------------------------------------------------
 def formatReturn(processed):
   i = -1
   for step in processed['steps']:
@@ -25,6 +28,7 @@ def formatReturn(processed):
       'y': step['position'][1]
     }
 
+# -------------------------------------------------------
 def parseEndState(processed, i):
   processed['endState'] = {
     'x': processed['steps'][i]['position'][0],
@@ -32,6 +36,7 @@ def parseEndState(processed, i):
     'rotation': processed['steps'][i]['rotation']
   }
 
+# -------------------------------------------------------
 def parseGrid(processed, max_coordinates):
   processed['gridDimension'] = max(
     abs(max_coordinates['-x']),
@@ -41,6 +46,7 @@ def parseGrid(processed, max_coordinates):
   )
   processed['gridCoordinates'] = max_coordinates
 
+# -------------------------------------------------------
 def parseRotate(processed, i, action):
   processed['steps'][i]['rotation'] = processed['steps'][i-1]['rotation'] + action['rotate']
   if (processed['steps'][i]['rotation'] == -90):
@@ -48,6 +54,7 @@ def parseRotate(processed, i, action):
   elif (processed['steps'][i]['rotation'] == 360):
     processed['steps'][i]['rotation'] = 0
 
+# -------------------------------------------------------
 def parseTranslate(processed, i, cache, max_coordinates, ROTATE_TRANSLATE_MAP):
   processed['steps'][i]['position'] = utils.listAdd(
     processed['steps'][i]['position'], 
