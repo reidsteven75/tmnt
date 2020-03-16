@@ -1,97 +1,22 @@
 import React, { Component } from 'react'
 import './App.css'
 
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
+import { MuiThemeProvider } from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import blue from '@material-ui/core/colors/blue'
-import teal from '@material-ui/core/colors/teal'
 import Grid from '@material-ui/core/Grid'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 
+import { theme } from './theme.js'
+import { config } from './config.js'
 import { coordinatesToGridPixels } from './utils'
+import { getFile } from './api-adapter'
 import Header from './components/header'
 import Viewer from './components/viewer'
 import Sidebar from './components/sidebar'
 
-import { getFile } from './api-adapter'
-
-const theme = createMuiTheme({
-  palette: {
-    type: 'dark',
-    primary: {
-      light: blue[300],
-      main: blue[500],
-      dark: blue[700],
-    },
-    secondary: {
-      light: teal['A200'],
-      main: teal['A400'],
-      dark: teal['A700'],
-    },
-  },
-  typography: {
-    useNextVariants: true,
-  },
-})
-
-const config = {
-  gridPadding: 5,
-  simulateSpeed: {
-    fast: {
-      updateRate: 1,
-      easing: 1,
-      slider: {
-        value: 2,
-        label: 'Fast'
-      }
-    },
-    mid: {
-      updateRate: 300,
-      easing: 0.3,
-      slider: {
-        value: 1,
-        label: 'Normal'
-      }
-    },
-    slow: {
-      updateRate: 1000,
-      easing: 0.1,
-      slider: {
-        value: 0,
-        label: 'Slow'
-      }
-    }
-  },
-  zoom: {
-    min: {
-      turtleCircleRadius: 25,
-      turtleTriangleSize: 20,
-      nodeRadiusUnique: 5,
-      nodeRadiusDuplicate: 10,
-      nodeRadiusOrigin: 25
-    },
-    mid: {
-      turtleCircleRadius: 15,
-      turtleTriangleSize: 11,
-      nodeRadiusUnique: 2,
-      nodeRadiusDuplicate: 4,
-      nodeRadiusOrigin: 15
-    },
-    max: {
-      turtleCircleRadius: 6,
-      turtleTriangleSize: 4,
-      nodeRadiusUnique: 1,
-      nodeRadiusDuplicate: 2,
-      nodeRadiusOrigin: 10
-    }
-  }
-}
-
-// app
-// ----
 class App extends Component {
 
   cache = {
@@ -104,11 +29,10 @@ class App extends Component {
 
   // lifecycle
   // ---------
-  
   constructor(props) {
     super(props)
     this.state = {
-      simulateSpeed: 'mid',
+      parseIndex: 0,
       stepCurrent: null,
       stepPrevious: null,
       stepNext: null,
@@ -117,14 +41,14 @@ class App extends Component {
       endState: null,
       gridDimensions: null,
       fileNameLoaded: null,
-      parseIndex: 0,
-      isAnimate: false,
-      isLoadingFile: false,
-      showErrorDialog: false,
       errorMessage: null,
       rendererWidth: null,
       rendererHeight: null,
-      viewerZoomConfig: config.zoom['min']
+      isAnimate: false,
+      isLoadingFile: false,
+      isShowErrorDialog: false,
+      viewerZoomConfig: config.zoom['min'],
+      simulateSpeed: 'mid'
     }
 
     this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
@@ -133,31 +57,20 @@ class App extends Component {
     this._handleLoadClicked = this._handleLoadClicked.bind(this)
     this._handleViewerSliderChange = this._handleViewerSliderChange.bind(this)
     this.handleErrorDialogClose = this.handleErrorDialogClose.bind(this)
-
-  }
-
-  componentDidMount() {
-
   }
 
   // functions
   // ---------
-
   parserAdjustSpeed() {
     clearInterval(this.cache.parserFunction)
     this.parserStart()
   }
 
-  parserReset() {
-    clearInterval(this.cache.parserFunction)
-  }
-
-  parserPause() {
+  parserStop() {
     clearInterval(this.cache.parserFunction)
   }
 
   parserStart() {
-
     const { simulateSpeed } = this.state
     const updateRate = config.simulateSpeed[simulateSpeed].updateRate
 
@@ -189,7 +102,6 @@ class App extends Component {
 
   parsePaths(paths, gridDimensions) {
     if (!paths || paths.length === 0) { return [] }
-
     const { rendererWidth,
             rendererHeight } = this.state
 
@@ -222,7 +134,6 @@ class App extends Component {
 
   parseNodes(nodes, gridDimensions) {
     if (!nodes || nodes.length === 0) { return [] }
-
     const { rendererWidth,
             rendererHeight } = this.state
 
@@ -245,7 +156,7 @@ class App extends Component {
   }
 
   _handleViewerSliderChange(value) {
-    this.parserPause()
+    this.parserStop()
     this.setState({
       parseIndex: value + 1,
       isAnimate: false
@@ -277,7 +188,7 @@ class App extends Component {
         else if (roundedGridDim > 50 <= 80) { viewerZoomConfig = config.zoom['mid'] }
         else if (roundedGridDim > 80) { viewerZoomConfig = config.zoom['max'] }
 
-        this.parserReset()
+        this.parserStop()
         this.setState({
           isLoadingFile: false,
           fileNameLoaded: res.fileName,
@@ -295,55 +206,62 @@ class App extends Component {
       } 
       catch (error) {
         this.setState({isLoadingFile: false}, () => {
-          this.showErrorDialoge(error)
+          this.showErrorDialog(error)
         })
       }
     })
     
   }
 
-  showErrorDialoge(error) {
+  showErrorDialog(error) {
     this.setState({
-      showErrorDialog: true,
+      isShowErrorDialog: true,
       errorMessage: error
     })
   }
 
+  // event handlers
+  // --------------
   handleErrorDialogClose() {
     this.setState({
-      showErrorDialog: false,
+      isShowErrorDialog: false,
     })
   }
 
 	_handleAnimateClicked() {
-    const { isAnimate } = this.state
-
-    const { stepCount,
+    const { isAnimate,
+            stepCount,
             parseIndex } = this.state
 
     if (isAnimate !== true) {
       let newState = { isAnimate: true }
       // restart at 0 if end of animation
       if (stepCount + 1 === parseIndex) { newState.parseIndex = 0 }
-      this.parserReset()
+      this.parserStop()
       this.setState(newState, () => {
         this.parserStart()
       })
     }
     else {
       this.setState({ isAnimate: false }, () => {
-        this.parserPause()
+        this.parserStop()
       })
     }
 	}
 
 	_handleSpeedChange(speed) {
-
     let simulateSpeed
-    if (speed === 0) { simulateSpeed = 'slow'}
-    else if (speed === 1) { simulateSpeed = 'mid'}
-    else if (speed === 2) { simulateSpeed = 'fast'}
-
+    switch(speed) {
+      case 0: 
+        simulateSpeed = 'slow'
+        break
+      case 1:
+        simulateSpeed = 'mid'
+        break
+      case 2:
+        simulateSpeed = 'fast'
+        break
+    }
     this.setState({
       simulateSpeed: simulateSpeed
     }, () => {
@@ -353,7 +271,6 @@ class App extends Component {
 
   // render
   // ------
-  
   render() {
 
     const { stepPrevious, 
@@ -363,7 +280,7 @@ class App extends Component {
             parseIndex,
             simulateSpeed,
             fileNameLoaded,
-            showErrorDialog,
+            isShowErrorDialog,
             errorMessage,
             isAnimate,
             isLoadingFile,
@@ -382,23 +299,23 @@ class App extends Component {
           <Grid container spacing={0}>
             <Grid item xs={2}>
               <Sidebar  
+                config={config}
                 isLoadingFile={isLoadingFile}
                 isAnimate={isAnimate}
                 fileNameLoaded={fileNameLoaded}
                 stepCurrent={stepCurrent}
                 stepNext={stepNext}
+                endState={endState}
                 handleAnimateClicked={this._handleAnimateClicked}
                 handleSpeedChange={this._handleSpeedChange}
                 handleLoadClicked={this._handleLoadClicked}
-                config={config}
-                endState={endState}
               />
             </Grid>
             <Grid item xs={10}>
               <Viewer
-                handleSliderChange={this._handleViewerSliderChange}
-                handleRendererUpdateDimensions={this._handleRendererUpdateDimensions}
                 cache={this.cache}
+                viewerZoomConfig={viewerZoomConfig}
+                isAnimate={isAnimate}
                 easing={easing}
                 gridDimensions={gridDimensions}
                 fileNameLoaded={fileNameLoaded}
@@ -409,15 +326,15 @@ class App extends Component {
                 stepCount={stepCount}
                 parseIndex={parseIndex}
                 endState={endState}
-                isAnimate={isAnimate}
-                viewerZoomConfig={viewerZoomConfig}
+                handleSliderChange={this._handleViewerSliderChange}
+                handleRendererUpdateDimensions={this._handleRendererUpdateDimensions}
               />
             </Grid>
           </Grid>
           
           <Dialog 
             aria-labelledby='dialog-title' 
-            open={showErrorDialog}
+            open={isShowErrorDialog}
             onClose={this.handleErrorDialogClose} 
           >
             <DialogTitle 

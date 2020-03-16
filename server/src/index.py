@@ -6,12 +6,10 @@ from flask_cors import CORS
 
 DIR_DATA = os.getenv('DIR_DATA')
 PORT_SERVER = os.getenv('PORT_SERVER')
-
 ACCEPTED_CHARS = ['F', 'R', 'L']
 
 app = Flask(__name__)
 CORS(app)
-
 
 def bad_request(message):
   response = jsonify({'message': message})
@@ -24,9 +22,8 @@ def status():
 
 @app.route('/api/files/analyze', methods=['GET'])
 def getFiles():
-
   files = utils.getFile(DIR_DATA, ['txt'])
-
+  
   # validation
   # ----------
   # no .txt files
@@ -37,7 +34,6 @@ def getFiles():
   # more than one .txt file
   if (num_files > 1):
     return bad_request('only one .txt file should be in ' + DIR_DATA)
-
   file = files[0]
   file_data = utils.parseFile(files[0]['path'], ACCEPTED_CHARS)
 
@@ -47,7 +43,7 @@ def getFiles():
 
   # process data
   # ------------
-  file_data_processed = processor.process_char_data(file_data)
+  file_data_processed = processor.processCharData(file_data)
 
   # response
   # --------

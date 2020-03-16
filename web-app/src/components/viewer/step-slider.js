@@ -14,7 +14,6 @@ class StepSlider extends Component {
 
 	// lifecycle
 	// ---------
-
   constructor(props) {
     super(props)
     this.state = {
@@ -39,32 +38,25 @@ class StepSlider extends Component {
 	
 	// render
 	// ------
-
   render() {
-
 		const	{ max, 
 						disabled,
 						parseIndex } = this.props
-
-		let content = 
-			<div>
-        <Slider
-					defaultValue={0}
-					getAriaValueText={this.valuetext}
-					aria-labelledby='discrete-slider-always'
-					min={0}
-					value={parseIndex - 1}
-					max={max ? max : 0}
-					step={1}
-					onChange={this.handleChange}
-					disabled={disabled ? false : true}
-					valueLabelDisplay={disabled ? 'on' : 'off'}
-				/>
-			</div>
-      
+    
     return (
         <div style={this.style.wrapper}>
-					{content}
+					<Slider
+						defaultValue={0}
+						getAriaValueText={this.valuetext}
+						aria-labelledby='discrete-slider-always'
+						min={0}
+						value={parseIndex - 1}
+						max={max ? max : 0}
+						step={1}
+						onChange={this.handleChange}
+						disabled={disabled ? false : true}
+						valueLabelDisplay={disabled ? 'on' : 'off'}
+					/>
         </div>
 		)
   }

@@ -5,10 +5,6 @@ import Renderer from './renderer.js'
 
 class Viewer extends Component {
 
-	config = {
-
-	}
-
 	style = {
 		wrapper: {
 			padding: 15,
@@ -37,16 +33,13 @@ class Viewer extends Component {
 
 	// render
 	// ------
-
   render() {
-
 		const {
 			easing,
 			gridDimensions,
 			stepCurrent,
 			stepPrevious,
 			stepNext,
-			stepIndexNext,
 			stepCount,
 			parseIndex,
 			steps,
@@ -60,8 +53,8 @@ class Viewer extends Component {
 			viewerZoomConfig
 		} = this.props
 
-		let content = 
-		  <React.Fragment>
+    return (
+			<div style={this.style.wrapper}>
 				<StepSlider
 					disabled={fileNameLoaded}
 					max={stepCount}
@@ -84,13 +77,7 @@ class Viewer extends Component {
 					isAnimate={isAnimate}
 					zoomConfig={viewerZoomConfig}
 				/>
-				
-			</React.Fragment>
-      
-    return (
-        <div style={this.style.wrapper}>
-					{content}
-        </div>
+			</div>
 		)
   }
 }

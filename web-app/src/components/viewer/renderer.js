@@ -2,7 +2,15 @@ import React, { Component } from 'react'
 import * as p5 from 'p5'
 
 import { coordinatesToGridPixels } from '../../utils'
-
+import { 
+				drawCooridinate, 
+				drawTurtle,
+				drawNodeOrigin,
+				drawNodeDuplicate,
+				drawNodeUnique,
+				drawPathDuplicate,
+				drawPathUnique
+			} from './draw.js'
 /*
 	rotation: 0-359 degrees, 0 = north
 */
@@ -22,16 +30,8 @@ class Renderer extends Component {
 		}
 	}
 
-	cache = {
-		nodesTravelled: [],
-		pathsTravelled: [],
-		nodesDuplicate: [],
-    pathsDuplicate: [],
-	}
-
 	// lifecycle
 	// ---------
-
   constructor(props) {
     super(props)
     this.state = {
@@ -56,28 +56,21 @@ class Renderer extends Component {
 			cooridinateMouseOver: null,
 			isReset: false
 		}
-
 		this.sketchRef = React.createRef()
-		
 	}
 
 	componentDidMount() {
-
     window.addEventListener('mousemove', this.handleMouseMove.bind(this))
-
 		this.s = (sk) => {  
 			this.sk = sk
-			// this.updateCanvasSize()
 			this.initP5()
 		}
 		this.p5 = new p5(this.s)
 		this.p5.disableFriendlyErrors = true
 		this.setState({loading:false})
-
 	}	
 
 	componentDidUpdate(prevProps) {
-
 		const { canvasWidth, 
 						canvasHeight,
 						origin_X,
@@ -106,7 +99,7 @@ class Renderer extends Component {
 		}
 
 		// if slider is moving, calculate next pixel position
-		if (steps && steps[parseIndex - 1] && parseIndexPrev !== parseIndex && isAnimate !== true) {
+		if (isAnimate !== true && steps && steps[parseIndex - 1] && parseIndexPrev !== parseIndex) {
 			let pixelsNext = coordinatesToGridPixels(
 				steps[parseIndex - 1].position.x,
 				steps[parseIndex - 1].position.y,
@@ -114,7 +107,6 @@ class Renderer extends Component {
 				canvasHeight, 
 				gridDimensions
 			)
-
 			this.setState({
 				isReset: false,
 				nextPosition_X: pixelsNext.x,
@@ -125,7 +117,6 @@ class Renderer extends Component {
 
 		// if animation, calculate next pixel position
 		else if (steps && steps[parseIndex - 1] && stepNext && parseIndexPrev !== parseIndex) {
-
 			let pixelsNext = coordinatesToGridPixels(
 				stepNext.position.x,
 				stepNext.position.y,
@@ -133,7 +124,6 @@ class Renderer extends Component {
 				canvasHeight, 
 				gridDimensions
 			)
-
 			this.setState({
 				isReset: false,
 				nextPosition_X: pixelsNext.x,
@@ -147,19 +137,15 @@ class Renderer extends Component {
 	// ---------
   
   handleMouseMove() {
-
     const { mouseX, mouseY, dist } = this.p5
     const { gridDimensions } = this.props
     const { canvasWidth, canvasHeight } = this.state
-
-    let cooridinate = null
-
+		let cooridinate = null
+		
     for (var x = 0; x < gridDimensions; x += 1) {
       for (var y = 0; y < gridDimensions; y += 1) {
-
         const grid_X = x * canvasWidth / gridDimensions,
               grid_Y = y * canvasHeight / gridDimensions
-
         if (dist(
                 mouseX, 
                 mouseY, 
@@ -167,7 +153,6 @@ class Renderer extends Component {
                 grid_Y) 
                 < 
                 5) {
-
           cooridinate = {
             render: {
               x: grid_X,
@@ -178,68 +163,42 @@ class Renderer extends Component {
         }
       }
     }
-
     this.setState({
 			cooridinateMouseOver: cooridinate
     })
-    
   }
 
-	redrawCanvas() {
-
-		const { canvasWidth, 
-						canvasHeight, 
-						currentPosition_X, 
-						currentPosition_Y, 
-						nextPosition_X, 
-						nextPosition_Y } = this.state
-
-		this.setState({
-			currentPosition_X: currentPosition_X + diffX,
-			currentPosition_Y: currentPosition_Y + diffY,
-			nextPosition_X: nextPosition_X + diffX,
-			nextPosition_Y: nextPosition_Y + diffY
-		}, () => {
-			this.p5.resizeCanvas(canvasWidth, canvasHeight).redraw()
-		})
-	}
-
 	initP5() {
-		
 		this.sk.setup = () => {
-
-			const sketchRef = this.sketchRef.current
-			const origin_X = sketchRef.offsetWidth/2
-			const origin_Y = sketchRef.offsetHeight/2
-			const canvasHeight = sketchRef.offsetHeight
-			const canvasWidth = sketchRef.offsetWidth
-
-			let canvas = this.sk.createCanvas(canvasWidth, canvasHeight)
-			canvas.parent(sketchRef.id)
-			// this.sk.frameRate(26)
-
-			this.props.handleRendererUpdateDimensions(
-				canvasWidth,
-				canvasHeight
-			)
-
-			this.setState({
-				canvasWidth: canvasWidth,
-				canvasHeight: canvasHeight,
-				origin_X: origin_X,
-				origin_Y: origin_Y,
-				currentPosition_X: origin_X,
-				currentPosition_Y: origin_Y,
-				nextPosition_X: origin_X,
-				nextPosition_Y: origin_Y,
-			})
-
+			 const sketchRef = this.sketchRef.current
+			 const origin_X = sketchRef.offsetWidth/2
+			 const origin_Y = sketchRef.offsetHeight/2
+			 const canvasHeight = sketchRef.offsetHeight
+			 const canvasWidth = sketchRef.offsetWidth
+ 
+			 let canvas = this.sk.createCanvas(canvasWidth, canvasHeight)
+			 canvas.parent(sketchRef.id)
+			 this.sk.frameRate(30)
+ 
+			 this.props.handleRendererUpdateDimensions(
+				 canvasWidth,
+				 canvasHeight
+			 )
+ 
+			 this.setState({
+				 canvasWidth: canvasWidth,
+				 canvasHeight: canvasHeight,
+				 origin_X: origin_X,
+				 origin_Y: origin_Y,
+				 currentPosition_X: origin_X,
+				 currentPosition_Y: origin_Y,
+				 nextPosition_X: origin_X,
+				 nextPosition_Y: origin_Y,
+			 })
 		}
 
 		this.sk.draw = () => {
-
 			// console.log('FPS: ' + Math.round(this.sk.frameRate()))
-
 			const { nextPosition_X, 
 							nextPosition_Y, 
 							currentPosition_X, 
@@ -265,33 +224,24 @@ class Renderer extends Component {
 							turtleTriangleSize,
 							nodeRadiusUnique,
 							nodeRadiusDuplicate,
-							nodeRadiusOrigin } = this.props.zoomConfig,
-						
-						cos = (degrees) => { return(Math.cos(degrees * Math.PI / 180).toFixed(2)) },
-						sin = (degrees) => { return(Math.sin(degrees * Math.PI / 180).toFixed(2)) }
+							nodeRadiusOrigin } = this.props.zoomConfig
 
-			var	dx, 
+			let	dx, 
 					dy,
-					drot,
-					colorIntensity = 0,
-					colorIncrement = 1,
-					strokeWeight = 1
+					drot
 
       this.sk.clear().noFill()
 			
-
 			// travelled paths
 			if (parsedPaths && parsedPaths.length > 0) {
 				parsedPaths.forEach((path) => {
 					if (path.index <= parseIndex - 1) {
-						this.sk.stroke(	152, 255, 152)
-								.strokeWeight(1)
-								.line(
-									path.x1,
-									path.y1,
-									path.x2,
-									path.y2
-								)
+						drawPathUnique(this.sk,
+															this.p5,
+															path.x1,
+															path.y1,
+															path.x2,
+															path.y2)
 					}
 				})
 			}
@@ -299,14 +249,12 @@ class Renderer extends Component {
 			if (parsedDupPaths && parsedDupPaths.length > 0) {
 				parsedDupPaths.forEach((path) => {
 					if (path.index <= parseIndex - 1) {
-						this.sk.stroke(	249, 111, 97)
-									.strokeWeight(2)
-									.line(
-										path.x1,
-										path.y1,
-										path.x2,
-										path.y2
-									)
+						drawPathDuplicate(this.sk,
+															this.p5,
+															path.x1,
+															path.y1,
+															path.x2,
+															path.y2)
 					}
 				})
 			}
@@ -315,15 +263,11 @@ class Renderer extends Component {
 			if (parsedNodes && parsedNodes.length > 0) {
 				parsedNodes.forEach((node) => {
 					if (node.index <= parseIndex - 1) {
-						this.sk.stroke(	152, 255, 152)
-									.strokeWeight(1)
-									.fill(255, 255, 255)
-									.ellipse(
-										node.x,
-										node.y,
-										nodeRadiusUnique,
-										nodeRadiusUnique
-									)
+						drawNodeUnique(this.sk,
+													this.p5,
+													node.x,
+													node.y,
+													nodeRadiusUnique)
 					}
 				})
 			}
@@ -331,106 +275,41 @@ class Renderer extends Component {
 			if (parsedDupNodes && parsedDupNodes.length > 0) {
 				parsedDupNodes.forEach((node) => {
 					if (node.index <= parseIndex - 1) {
-						this.sk.stroke(	249, 111, 97)
-									.strokeWeight(2)
-									.fill(255, 255, 255)
-									.ellipse(
-										node.x,
-										node.y,
-										nodeRadiusDuplicate,
-										nodeRadiusDuplicate
-									)
-					}
+						drawNodeDuplicate(this.sk,
+														this.p5,
+														node.x,
+														node.y,
+														nodeRadiusDuplicate)
+						}
 				})
 			}
 
 			// origin node
-			this.sk.stroke(	34, 150, 243)
-						.noFill()
-						.strokeWeight(1)
-						.ellipse(
-							origin_X,
-							origin_Y,
-							nodeRadiusOrigin,
-							nodeRadiusOrigin
-						)
+			drawNodeOrigin(this.sk,
+										this.p5,
+										origin_X,
+										origin_Y,
+										nodeRadiusOrigin)
 			
-			// turtle - draw
-			const drawTurtle = (pos_X, pos_Y, rot, r , g, b, radius, weight) => {
-				const x1 = pos_X - (turtleTriangleSize/2)*cos(rot),
-							x2 = pos_X + (turtleTriangleSize/2)*cos(rot),
-							x3 = pos_X + turtleTriangleSize*sin(rot),
-							y1 = pos_Y - (turtleTriangleSize/2)*sin(rot),
-							y2 = pos_Y + (turtleTriangleSize/2)*sin(rot),
-							y3 = pos_Y - turtleTriangleSize*cos(rot)
-
-				this.sk.stroke(r,g,b)
-								.noFill()
-								.strokeWeight(3)
-								.triangle(x1,y1,x2,y2,x3,y3)
-								.ellipse(
-									pos_X,
-									pos_Y,
-									radius,
-									radius
-								)
-			}
-			
-			// turtle - current state
+			// turtle
 			dy = nextPosition_Y - currentPosition_Y
-			dx = nextPosition_X - currentPosition_X
-			for (var i = 0; i < turtleCircleRadius; i += colorIncrement ) {
-
-				// determine if moving
-				if (Math.abs(dy) > 0.5 || Math.abs(dx) > 0.5) {
-					colorIntensity = Math.floor(Math.random() * 5 * Math.max(Math.abs(dx),Math.abs(dy))) 
-					colorIncrement = 2
-					strokeWeight = 1
-				}
-				else { 
-					colorIncrement = 5
-					strokeWeight = 3
-				}
-				drawTurtle(
-					currentPosition_X, 
-					currentPosition_Y, 
-					currentRotation, 
-					37 + colorIntensity, 
-					175 + colorIntensity, 
-					180 + colorIntensity,
-					i,
-					strokeWeight
-				)
-			}	
+  		dx = nextPosition_X - currentPosition_X
+			drawTurtle(this.sk, 
+								this.p5,
+								dy,
+								dx,
+								currentPosition_X,
+								currentPosition_Y,
+								currentRotation,
+								turtleCircleRadius,
+								turtleTriangleSize) 	
       
       // hovered cooridinte
-      if (cooridinateMouseOver) {
-        this.sk.stroke(255, 255, 255)
-								.strokeWeight(0.9)
-								.noFill()
-								.ellipse(
-									cooridinateMouseOver.render.x,
-									cooridinateMouseOver.render.y,
-									8,
-									8
-                )
-                .fill(128, 128, 128, 200)
-                .rect(
-                  cooridinateMouseOver.render.x-30, 
-                  cooridinateMouseOver.render.y-32, 
-                  60, 
-                  22,
-                  15
-                )
-                .fill(255, 255, 255)
-                .textAlign(this.p5.CENTER)
-                .textFont('Helvetica')
-                .text(
-                  cooridinateMouseOver.label, 
-                  cooridinateMouseOver.render.x, 
-                  cooridinateMouseOver.render.y-17
-                  )
-      }
+      if (cooridinateMouseOver) { 
+				drawCooridinate(this.sk, 
+												this.p5, 
+												cooridinateMouseOver) 
+			}
 			
       // account for rotations from 270 -> 0, 0 -> 270
 			let rotFactor = 0
@@ -453,8 +332,6 @@ class Renderer extends Component {
 					}
 				}
 			} 
-		
-			// console.log(rotFactor, currentRotation, nextRotation)
 			
 			// update position
 			this.setState({
@@ -469,19 +346,15 @@ class Renderer extends Component {
 	// ------
 
   render() {
-
-		let content = 
-      <div 
-        id='sketch-area-grid' 
-        ref={this.sketchRef}
-        style={this.style.sketchArea}
-      >
-      </div>
-    
     return (
-        <div style={this.style.wrapper}>
-					{content}
-        </div>
+			<div style={this.style.wrapper}>
+				<div 
+					id='sketch-area-grid' 
+					ref={this.sketchRef}
+					style={this.style.sketchArea}
+				>
+				</div>
+			</div>
 		)
   }
 }

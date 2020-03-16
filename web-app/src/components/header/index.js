@@ -5,26 +5,16 @@ import Typography from '@material-ui/core/Typography'
 
 class Header extends Component {
 
-	style = {
 
-	}
-
-	config = {
-
-	}
-	
 	// lifecycle
 	// ---------
-
 	constructor(props) {
 		super(props)
 	}
 
 	// render
 	// ------
-
   render() {
-
 		return (
 			<div>
 				<AppBar 

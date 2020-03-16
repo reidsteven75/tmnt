@@ -16,3 +16,6 @@ export const coordinatesToGridPixels = (
     y: origin_Y + stepSizePixels_Y * position_y
   })
 }
+
+export const cos = (degrees) => { return(Math.cos(degrees * Math.PI / 180).toFixed(2)) }
+export const sin = (degrees) => { return(Math.sin(degrees * Math.PI / 180).toFixed(2)) }
