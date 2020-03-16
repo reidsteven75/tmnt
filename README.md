@@ -30,8 +30,4 @@ Replace the file in `/data` with a new .txt file containing a sequence of 'L,F,R
 - UI is not visually responsive when changing screen width after app is loaded
 
 #### Misc
-
-Icon Updates
-```
-https://favicon.io/favicon-converter/
-```
+[Icon Generator](https://favicon.io/favicon-converter/)
