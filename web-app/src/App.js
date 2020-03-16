@@ -71,7 +71,7 @@ class App extends Component {
 
     this.config = config
 
-    this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
+		this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
 		this._handleAnimateClicked = this._handleAnimateClicked.bind(this)
     this._handleSpeedChange = this._handleSpeedChange.bind(this)
     this._handleLoadClicked = this._handleLoadClicked.bind(this)
