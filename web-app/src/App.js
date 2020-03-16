@@ -272,7 +272,7 @@ class App extends Component {
     }
 	}
 
-	_handleSpeedChange(speed) {
+	_handleSpeedChange(event, speed) {
     let simulateSpeed
     switch(speed) {
       case 0: 

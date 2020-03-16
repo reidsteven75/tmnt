@@ -26,7 +26,7 @@ class Renderer extends Component {
 		sketchAreaGrid: {
 			border: '1px solid black',
 			height: '80vh',
-			width: `calc(96% - ${285}px)`,
+			width: `calc(95% - ${285}px)`,
 			margin: 'auto',
 			position: 'fixed',
 			top: 170,
@@ -35,7 +35,7 @@ class Renderer extends Component {
 		sketchAreaTurtle: {
 			border: '1px solid gray',
 			height: '80vh',
-			width: `calc(96% - ${285}px)`,
+			width: `calc(95% - ${285}px)`,
 			margin: 'auto',
 			position: 'fixed',
 			top: 170,
@@ -251,7 +251,7 @@ class Renderer extends Component {
 			// travelled paths
 			if (parsedPaths && parsedPaths.length > 0) {
 				parsedPaths.forEach((path) => {
-					if (path.index <= parseIndex - 1) {
+					if (path.index <= parseIndex) {
 						drawPathUnique(this.sk_grid,
 															this.p5_grid,
 															path.x1,
@@ -264,7 +264,7 @@ class Renderer extends Component {
 			// duplicate paths
 			if (parsedDupPaths && parsedDupPaths.length > 0) {
 				parsedDupPaths.forEach((path) => {
-					if (path.index <= parseIndex - 1) {
+					if (path.index <= parseIndex) {
 						drawPathDuplicate(this.sk_grid,
 															this.p5_grid,
 															path.x1,
@@ -278,7 +278,7 @@ class Renderer extends Component {
 			// travelled nodes
 			if (parsedNodes && parsedNodes.length > 0) {
 				parsedNodes.forEach((node) => {
-					if (node.index <= parseIndex - 1) {
+					if (node.index + 1 <= parseIndex) {
 						drawNodeUnique(this.sk_grid,
 													this.p5_grid,
 													node.x,
@@ -290,7 +290,7 @@ class Renderer extends Component {
 			// duplicate nodes
 			if (parsedDupNodes && parsedDupNodes.length > 0) {
 				parsedDupNodes.forEach((node) => {
-					if (node.index <= parseIndex - 1) {
+					if (node.index + 1 <= parseIndex) {
 						drawNodeDuplicate(this.sk_grid,
 														this.p5_grid,
 														node.x,
