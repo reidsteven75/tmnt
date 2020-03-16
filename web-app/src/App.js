@@ -3,7 +3,6 @@ import './App.css'
 
 import { MuiThemeProvider } from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
-import Grid from '@material-ui/core/Grid'
 import Drawer from '@material-ui/core/Drawer'
 import Dialog from '@material-ui/core/Dialog'
 import DialogContent from '@material-ui/core/DialogContent'
@@ -71,8 +70,8 @@ class App extends Component {
 
     this.config = config
 
-		this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
-		this._handleAnimateClicked = this._handleAnimateClicked.bind(this)
+    this._handleRendererUpdateDimensions = this._handleRendererUpdateDimensions.bind(this)
+    this._handleAnimateClicked = this._handleAnimateClicked.bind(this)
     this._handleSpeedChange = this._handleSpeedChange.bind(this)
     this._handleLoadClicked = this._handleLoadClicked.bind(this)
     this._handleViewerSliderChange = this._handleViewerSliderChange.bind(this)
