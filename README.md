@@ -8,8 +8,6 @@
 ```
 $ docker-compose up
 ```
-
-#### Web App URL
 ```
 http://0.0.0.0:3000/
 ```
