@@ -5,29 +5,29 @@ import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline'
 
 class Animator extends Component {
 
-	style = {
-		button: {
-			width: '100%'
+  style = {
+    button: {
+      width: '100%'
     },
     slider: {
-			width: '85%'
-		}
-	}
+      width: '85%'
+    }
+  }
 
-	// lifecycle
-	// ---------
-	constructor(props) {
-		super(props)		
+  // lifecycle
+  // ---------
+  constructor(props) {
+    super(props)		
   }
   
   // function
   // --------
   valuetext(value) {
-		return `${value}`
+    return `${value}`
   }
 
-	// render
-	// ------
+  // render
+  // ------
   render() {
     const { config,
             fileNameLoaded,
@@ -41,7 +41,7 @@ class Animator extends Component {
       config.simulateSpeed.fast.slider,
     ]
 
-		return (
+    return (
       <div>
         <Button
           variant='outlined'
@@ -67,9 +67,9 @@ class Animator extends Component {
           valueLabelDisplay='off'
           onChangeCommitted={handleSpeedChange}
         />
-			</div>
-		)
-	} 
+      </div>
+    )
+  } 
 }
 
 export default Animator

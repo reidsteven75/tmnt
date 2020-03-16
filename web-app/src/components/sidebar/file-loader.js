@@ -6,26 +6,26 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 
 class FileLoader extends Component {
 
-	style = {
-		button: {
-			width: '100%'
-		}
-	}
+  style = {
+    button: {
+      width: '100%'
+    }
+  }
 
-	// lifecycle
-	// ---------
-	constructor(props) {
-		super(props)		
-	}
+  // lifecycle
+  // ---------
+  constructor(props) {
+    super(props)		
+  }
 
-	// render
-	// ------
+  // render
+  // ------
   render() {
-		const { fileNameLoaded,
+    const { fileNameLoaded,
             isLoadingFile,
             handleLoadClicked } = this.props
 
-		return (
+    return (
       <div>
         <Button
           variant='outlined'
@@ -41,9 +41,9 @@ class FileLoader extends Component {
         <Typography color='textSecondary' noWrap={true}>
           { fileNameLoaded ? fileNameLoaded : 'no file loaded' }
         </Typography>
-			</div>
-		)
-	} 
+      </div>
+    )
+  } 
 }
 
 export default FileLoader

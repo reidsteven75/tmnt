@@ -250,7 +250,7 @@ class App extends Component {
     
   }
 
-	_handleAnimateClicked() {
+  _handleAnimateClicked() {
     const { isAnimate,
             stepCount,
             parseIndex } = this.state
@@ -269,9 +269,9 @@ class App extends Component {
         this.parserStop()
       })
     }
-	}
+  }
 
-	_handleSpeedChange(event, speed) {
+  _handleSpeedChange(event, speed) {
     let simulateSpeed
     switch(speed) {
       case 0: 
@@ -289,7 +289,7 @@ class App extends Component {
     }, () => {
       this.parserAdjustSpeed()
     })
-	}
+  }
 
   // render
   // ------

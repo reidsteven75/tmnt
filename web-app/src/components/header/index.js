@@ -5,37 +5,37 @@ import Typography from '@material-ui/core/Typography'
 
 class Header extends Component {
 
-	// lifecycle
-	// ---------
-	constructor(props) {
-		super(props)
-	}
+  // lifecycle
+  // ---------
+  constructor(props) {
+    super(props)
+  }
 
-	// render
-	// ------
+  // render
+  // ------
   render() {
 
-		const { style } = this.props
+    const { style } = this.props
 
-		return (
-			<div>
-				<AppBar 
-					position='static'
-					color='inherit'
-					style={style}
-				>
-					<Toolbar>
-						<Typography 
-							variant='h6' 
-							color='textPrimary' 
-						>
-							Teenage Mutant Ninja Turtle Simulator
-						</Typography>
-					</Toolbar>
-				</AppBar>
-			</div>
-		)
-	} 
+    return (
+      <div>
+        <AppBar 
+          position='static'
+          color='inherit'
+          style={style}
+        >
+          <Toolbar>
+            <Typography 
+              variant='h6' 
+              color='textPrimary' 
+            >
+              Teenage Mutant Ninja Turtle Simulator
+            </Typography>
+          </Toolbar>
+        </AppBar>
+      </div>
+    )
+  } 
 }
 
 export default Header

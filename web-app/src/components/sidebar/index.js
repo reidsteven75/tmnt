@@ -7,108 +7,108 @@ import TurtleState from './turtle-state.js'
 
 class Sidebar extends Component {
 
-	style = {
-		wrapper: {
-			marginTop: 80,
-			height: '100%',
-		},
-		section: {
-			padding: 15
-		}
-	}
+  style = {
+    wrapper: {
+      marginTop: 80,
+      height: '100%',
+    },
+    section: {
+      padding: 15
+    }
+  }
 
-	// lifecycle
-	// ---------
-	constructor(props) {
-		super(props)
-	}
+  // lifecycle
+  // ---------
+  constructor(props) {
+    super(props)
+  }
 
-	// render
-	// ------
+  // render
+  // ------
   render() {
-		const { stepCurrent,
-						stepNext,
-						config,
-						fileNameLoaded,
-						isAnimate,
-						isLoadingFile,
-						endState,
-						handleLoadClicked,
-						handleSpeedChange,
-						handleAnimateClicked } = this.props
+    const { stepCurrent,
+            stepNext,
+            config,
+            fileNameLoaded,
+            isAnimate,
+            isLoadingFile,
+            endState,
+            handleLoadClicked,
+            handleSpeedChange,
+            handleAnimateClicked } = this.props
 
-		let positionCurrent = '0, 0',
-				rotationCurrent = '0°',
-				positionNext = '?, ?',
-				rotationNext = '?°',
-				positionEnd = '?, ?',
-				rotationEnd = '?°',
-				char = '?'
+    let positionCurrent = '0, 0',
+        rotationCurrent = '0°',
+        positionNext = '?, ?',
+        rotationNext = '?°',
+        positionEnd = '?, ?',
+        rotationEnd = '?°',
+        char = '?'
 
-		if (stepCurrent && stepCurrent.position) {
-			positionCurrent = `${stepCurrent.position.x}, ${stepCurrent.position.y}`
-			rotationCurrent = `${stepCurrent.rotation}°`
-		}
+    if (stepCurrent && stepCurrent.position) {
+      positionCurrent = `${stepCurrent.position.x}, ${stepCurrent.position.y}`
+      rotationCurrent = `${stepCurrent.rotation}°`
+    }
 
-		if (stepNext && stepNext.position) {
-			char = stepNext.char
-			positionNext = `${stepNext.position.x}, ${stepNext.position.y}`
-			rotationNext = `${stepNext.rotation}°`
-		}
+    if (stepNext && stepNext.position) {
+      char = stepNext.char
+      positionNext = `${stepNext.position.x}, ${stepNext.position.y}`
+      rotationNext = `${stepNext.rotation}°`
+    }
 
-		if (endState) {
-			positionEnd = `${endState.x}, ${endState.y}`
-			rotationEnd = `${endState.rotation}°`
-		}
+    if (endState) {
+      positionEnd = `${endState.x}, ${endState.y}`
+      rotationEnd = `${endState.rotation}°`
+    }
 
-		let rows = [
-			{state: 'Current', position: positionCurrent, rotation: rotationCurrent},
-			{state: 'Next', position: positionNext, rotation: rotationNext},
-			{state: 'End', position: positionEnd, rotation: rotationEnd}
-		]
+    let rows = [
+      {state: 'Current', position: positionCurrent, rotation: rotationCurrent},
+      {state: 'Next', position: positionNext, rotation: rotationNext},
+      {state: 'End', position: positionEnd, rotation: rotationEnd}
+    ]
 
-		return (
-			<div style={this.style.wrapper}>
+    return (
+      <div style={this.style.wrapper}>
 
-				<section style={this.style.section}>
-					<FileLoader
-						fileNameLoaded={fileNameLoaded}
+        <section style={this.style.section}>
+          <FileLoader
+            fileNameLoaded={fileNameLoaded}
             isLoadingFile={isLoadingFile}
             handleLoadClicked={handleLoadClicked}
-					/>
-				</section>
+          />
+        </section>
 
-				<Divider variant='fullWidth' />
+        <Divider variant='fullWidth' />
 
-				<section style={this.style.section}>
-					<br/>
-						<Animator
-							config={config}
-							isAnimate={isAnimate}
-							fileNameLoaded={fileNameLoaded}
-							handleSpeedChange={handleSpeedChange}
-							handleAnimateClicked={handleAnimateClicked}
-						/>
-					<br/>
-				</section>
+        <section style={this.style.section}>
+          <br/>
+            <Animator
+              config={config}
+              isAnimate={isAnimate}
+              fileNameLoaded={fileNameLoaded}
+              handleSpeedChange={handleSpeedChange}
+              handleAnimateClicked={handleAnimateClicked}
+            />
+          <br/>
+        </section>
 
-				<Divider variant='fullWidth' />
-				<br/>
+        <Divider variant='fullWidth' />
+        <br/>
 
-				<section style={this.style.section}>
-					<TurtleState
-						char={char}
-						rows={rows}
-					/>
-				</section>
+        <section style={this.style.section}>
+          <TurtleState
+            char={char}
+            rows={rows}
+          />
+        </section>
 
-				<br/>
-				<Divider variant='fullWidth' />
-				<br/>
+        <br/>
+        <Divider variant='fullWidth' />
+        <br/>
 
-			</div>
-		)
-	} 
+      </div>
+    )
+  } 
 }
 
 export default Sidebar

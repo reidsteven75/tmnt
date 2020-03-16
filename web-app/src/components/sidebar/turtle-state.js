@@ -13,29 +13,29 @@ import Paper from '@material-ui/core/Paper'
 
 class TurtleState extends Component {
 
-	style = {
-		button: {
-			width: '100%'
+  style = {
+    button: {
+      width: '100%'
     },
     avatar: {
-			width: '75%',
-			maxWidth: '100px'
-		}
-	}
+      width: '75%',
+      maxWidth: '100px'
+    }
+  }
 
-	// lifecycle
-	// ---------
-	constructor(props) {
-		super(props)		
-	}
+  // lifecycle
+  // ---------
+  constructor(props) {
+    super(props)		
+  }
 
-	// render
-	// ------
+  // render
+  // ------
   render() {
-		const { char,
+    const { char,
             rows } = this.props
 
-		return (
+    return (
       <div>
         <Card>
           <CardContent>
@@ -78,9 +78,9 @@ class TurtleState extends Component {
             </TableBody>
           </Table>
         </TableContainer>
-			</div>
-		)
-	} 
+      </div>
+    )
+  } 
 }
 
 export default TurtleState
