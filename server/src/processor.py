@@ -2,26 +2,7 @@ import os
 import utils
 import functions
 
-ROTATE_TRANSLATE_MAP = {
-  '0': [0, -1],
-  '90': [1, 0],
-  '180': [0, 1],
-  '270': [-1, 0],
-}
-
-CHAR_ACTION = {
-  'F': {
-    'translate': 1,
-  },
-  'R': {
-    'rotate': 90
-  },
-  'L': {
-    'rotate': -90
-  }
-}
-
-def processCharData(char_list):
+def processCharData(char_list, initRotation, ROTATE_TRANSLATE_MAP, CHAR_ACTION):
 
   max_coordinates = {
     '-x': 0,
@@ -54,7 +35,7 @@ def processCharData(char_list):
     'gridDimensions': {}
   }
 
-  functions.populateOrigin(processed)
+  functions.populateOrigin(processed, initRotation)
 
   i = 0
   for char in char_list:

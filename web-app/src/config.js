@@ -1,4 +1,5 @@
 export const config = {
+  initRotation: 270,
   sidebarWidth: 285,
   gridPadding: 5,
   rendererFPS: 30,

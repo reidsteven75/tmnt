@@ -23,6 +23,7 @@ class FileLoader extends Component {
   render() {
     const { fileNameLoaded,
             isLoadingFile,
+            isLoadEnabled,
             handleLoadClicked } = this.props
 
     return (
@@ -33,7 +34,7 @@ class FileLoader extends Component {
           style={this.style.button}
           startIcon={isLoadingFile ? null : <PublishIcon />}
           onClick={handleLoadClicked}
-          disabled={isLoadingFile}
+          disabled={isLoadingFile || !isLoadEnabled}
         >
           { isLoadingFile ? <CircularProgress size={24}/> : 'Load' }
         </Button>

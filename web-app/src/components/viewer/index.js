@@ -38,7 +38,6 @@ class Viewer extends Component {
       easing,
       gridDimensions,
       stepCurrent,
-      stepPrevious,
       stepNext,
       stepCount,
       parseIndex,
@@ -51,7 +50,8 @@ class Viewer extends Component {
       handleSliderChange,
       isAnimate,
       viewerZoomConfig,
-      fps
+      fps,
+      initRotation
     } = this.props
 
     return (
@@ -67,12 +67,12 @@ class Viewer extends Component {
         <Renderer
           cache={cache}
           fps={fps}
+          initRotation={initRotation}
           handleRendererUpdateDimensions={handleRendererUpdateDimensions}
           easing={easing}
           gridDimensions={gridDimensions}
           steps={steps}
           stepCurrent={stepCurrent}
-          stepPrevious={stepPrevious}
           stepNext={stepNext}
           parseIndex={parseIndex}
           endState={endState}

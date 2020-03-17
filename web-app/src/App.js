@@ -51,7 +51,6 @@ class App extends Component {
     this.state = {
       parseIndex: 0,
       stepCurrent: null,
-      stepPrevious: null,
       stepNext: null,
       stepCount: null,
       steps: null,
@@ -61,6 +60,7 @@ class App extends Component {
       errorMessage: null,
       rendererWidth: null,
       rendererHeight: null,
+      isLoadEnabled: false,
       isAnimate: false,
       isLoadingFile: false,
       isShowErrorDialog: false,
@@ -79,10 +79,22 @@ class App extends Component {
 
   }
 
+  componentDidMount() {
+    const { initRotation } = config
+    this.setState({
+      isLoadEnabled: true,
+      stepCurrent: {
+        position: {
+          x: 0,
+          y: 0
+        },
+        rotation: initRotation
+      }
+    })
+  }
+
   // functions
   // ---------
-
-
   parserAdjustSpeed() {
     clearInterval(this.cache.parserFunction)
     this.parserStart()
@@ -99,27 +111,28 @@ class App extends Component {
     this.cache.parserFunction = setInterval(() => {
 
       let { parseIndex, steps } = this.state
-      let stepCurrent, stepNext, stepPrevious
-
-      if (typeof steps[parseIndex] !== 'undefined') { stepCurrent = steps[parseIndex] }
-      if (typeof steps[parseIndex + 1] !== 'undefined') { stepNext = steps[parseIndex + 1] }
-      if (typeof steps[parseIndex - 1] !== 'undefined') { stepPrevious = steps[parseIndex - 1] }
+      let stepCurrent = this.parseStep(steps[parseIndex]),
+          stepNext = this.parseStep(steps[parseIndex + 1])
 
       if (stepCurrent) {
         this.setState({
           stepCurrent: stepCurrent,
           stepNext: stepNext,
-          stepPrevious: stepPrevious,
           parseIndex: parseIndex + 1
         })
       }
       if (!stepNext) {
         this.setState({
-          isAnimate: false
+          isAnimate: false,
         })
       }
 
     }, updateRate)
+  }
+
+  parseStep(step) {
+    if (typeof step !== 'undefined') { return step }
+    else { return null }
   }
 
   parsePaths(paths, gridDimensions) {
@@ -194,7 +207,14 @@ class App extends Component {
 
   _handleViewerSliderChange(value) {
     this.parserStop()
+    let { parseIndex, steps } = this.state
+    
+    let stepCurrent = this.parseStep(steps[parseIndex - 1]),
+          stepNext = this.parseStep(steps[parseIndex])
+
     this.setState({
+      stepCurrent: stepCurrent,
+      stepNext: stepNext,
       parseIndex: value + 1,
       isAnimate: false
     })
@@ -208,11 +228,14 @@ class App extends Component {
   }
 
   _handleLoadClicked() {
+
+    const { initRotation } = config
+
     this.setState({
       isLoadingFile: true
     }, async () => {
       try {
-        let res = await getFile()
+        let res = await getFile({initRotation: initRotation})
         const roundedGridDim = 2 * Math.round(res.fileData.gridDimension + config.gridPadding / 2)
 
         this.cache.parsedDupNodes = this.parseNodes(res.fileData.dupNodes, roundedGridDim)
@@ -233,7 +256,6 @@ class App extends Component {
           endState: res.fileData.endState,
           gridDimensions: roundedGridDim,
           stepCurrent: null,
-          stepPrevious: null,
           stepNext: null,
           stepCount: res.fileData.steps.length - 1,
           parseIndex: res.fileData.steps.length,
@@ -295,8 +317,7 @@ class App extends Component {
   // ------
   render() {
 
-    const { stepPrevious, 
-            stepCurrent, 
+    const { stepCurrent, 
             stepNext, 
             stepCount,
             parseIndex,
@@ -306,6 +327,7 @@ class App extends Component {
             errorMessage,
             isAnimate,
             isLoadingFile,
+            isLoadEnabled,
             steps,
             endState,
             gridDimensions,
@@ -327,6 +349,7 @@ class App extends Component {
           >
             <Sidebar  
               config={config}
+              isLoadEnabled={isLoadEnabled}
               isLoadingFile={isLoadingFile}
               isAnimate={isAnimate}
               fileNameLoaded={fileNameLoaded}
@@ -341,6 +364,7 @@ class App extends Component {
           <main style={this.style.main}>
             <Viewer
               cache={this.cache}
+              initRotation={config.initRotation}
               fps={config.rendererFPS}
               viewerZoomConfig={viewerZoomConfig}
               isAnimate={isAnimate}
@@ -349,7 +373,6 @@ class App extends Component {
               fileNameLoaded={fileNameLoaded}
               steps={steps}
               stepCurrent={stepCurrent}
-              stepPrevious={stepPrevious}
               stepNext={stepNext}
               stepCount={stepCount}
               parseIndex={parseIndex}

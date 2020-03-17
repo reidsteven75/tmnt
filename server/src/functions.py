@@ -2,11 +2,11 @@ import os
 import utils
 
 # -------------------------------------------------------
-def populateOrigin(processed):
+def populateOrigin(processed, initRotation):
   processed['steps'][0] = {
     'char': 'n/a',
     'position': [0, 0],
-    'rotation': 0,
+    'rotation': int(initRotation),
     'dupNode': False,
     'dupPath': False
   }

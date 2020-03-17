@@ -35,7 +35,8 @@ class Sidebar extends Component {
             endState,
             handleLoadClicked,
             handleSpeedChange,
-            handleAnimateClicked } = this.props
+            handleAnimateClicked,
+            isLoadEnabled } = this.props
 
     let positionCurrent = '0, 0',
         rotationCurrent = '0°',
@@ -74,6 +75,7 @@ class Sidebar extends Component {
           <FileLoader
             fileNameLoaded={fileNameLoaded}
             isLoadingFile={isLoadingFile}
+            isLoadEnabled={isLoadEnabled}
             handleLoadClicked={handleLoadClicked}
           />
         </section>

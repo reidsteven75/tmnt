@@ -105,7 +105,8 @@ class Renderer extends Component {
             stepNext,
             parseIndex,
             isAnimate,
-            steps } = this.props,
+            steps,
+            initRotation } = this.props,
 
             parseIndexPrev = prevProps.parseIndex
 
@@ -117,8 +118,8 @@ class Renderer extends Component {
         currentPosition_Y: origin_Y,
         nextPosition_X: origin_X,
         nextPosition_Y: origin_Y,
-        currentRotation: 0,
-        nextRotation: 0
+        currentRotation: initRotation,
+        nextRotation: initRotation
       })
       
     }
@@ -316,22 +317,25 @@ class Renderer extends Component {
   initP5_turtle() {
 
     this.sk_turtle.setup = () => {
-       const sketchRef = this.sketchRefTurtle.current
-       const origin_X = sketchRef.offsetWidth/2
-       const origin_Y = sketchRef.offsetHeight/2
-       const canvasHeight = sketchRef.offsetHeight
-       const canvasWidth = sketchRef.offsetWidth
- 
-       let canvas = this.sk_turtle.createCanvas(canvasWidth, canvasHeight)
-       canvas.parent(sketchRef.id)
-       this.sk_turtle.frameRate(this.props.fps)
- 
-       this.setState({
-         currentPosition_X: origin_X,
-         currentPosition_Y: origin_Y,
-         nextPosition_X: origin_X,
-         nextPosition_Y: origin_Y,
-       })
+      const { initRotation } = this.props
+      const sketchRef = this.sketchRefTurtle.current
+      const origin_X = sketchRef.offsetWidth/2
+      const origin_Y = sketchRef.offsetHeight/2
+      const canvasHeight = sketchRef.offsetHeight
+      const canvasWidth = sketchRef.offsetWidth
+
+      let canvas = this.sk_turtle.createCanvas(canvasWidth, canvasHeight)
+      canvas.parent(sketchRef.id)
+      this.sk_turtle.frameRate(this.props.fps)
+
+      this.setState({
+        currentPosition_X: origin_X,
+        currentPosition_Y: origin_Y,
+        nextPosition_X: origin_X,
+        nextPosition_Y: origin_Y,
+        currentRotation: initRotation,
+        nextRotation: initRotation
+      })
     }
 
     this.sk_turtle.draw = () => {

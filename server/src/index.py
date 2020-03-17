@@ -1,12 +1,29 @@
 import os
 import utils
 import processor
-from flask import Flask, jsonify, abort
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 DIR_DATA = os.getenv('DIR_DATA')
 PORT_SERVER = os.getenv('PORT_SERVER')
 ACCEPTED_CHARS = ['F', 'R', 'L']
+ROTATE_TRANSLATE_MAP = {
+  '0': [0, -1],
+  '90': [1, 0],
+  '180': [0, 1],
+  '270': [-1, 0],
+}
+CHAR_ACTION = {
+  'F': {
+    'translate': 1,
+  },
+  'R': {
+    'rotate': 90
+  },
+  'L': {
+    'rotate': -90
+  }
+}
 
 app = Flask(__name__)
 CORS(app)
@@ -26,12 +43,23 @@ def getFiles():
   
   # validation
   # ----------
+
+  # query params
+  initRotation = request.args.get('initRotation')
+  if (initRotation is None):
+    return bad_request('missing required query param \'initRotation\'')
+
+  if initRotation not in ROTATE_TRANSLATE_MAP:
+    return bad_request('invalid query param \'initRotation\', it must be one of ' +
+                      str(list(ROTATE_TRANSLATE_MAP)) + 
+                      '. You can change this in \'web-app/config.js\'')
+
   # no .txt files
   num_files = len(files)
   if (num_files == 0):
     return bad_request('no .txt files in ' + DIR_DATA)
 
-  # more than one .txt file
+  # no more than one .txt file
   if (num_files > 1):
     return bad_request('only one .txt file should be in ' + DIR_DATA)
   file = files[0]
@@ -43,7 +71,7 @@ def getFiles():
 
   # process data
   # ------------
-  file_data_processed = processor.processCharData(file_data)
+  file_data_processed = processor.processCharData(file_data, initRotation, ROTATE_TRANSLATE_MAP, CHAR_ACTION)
 
   # response
   # --------

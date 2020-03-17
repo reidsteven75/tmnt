@@ -5,11 +5,12 @@ const API = SERVER + '/api'
 
 import axios from 'axios'
 
-const getFile = () => {
+const getFile = (params) => {
   return new Promise((resolve, reject) => {
     axios({
       method: 'get',
       url: API + '/files/analyze',
+      params: params
     })
     .then((res) => {
       if (res.status === 200) {
