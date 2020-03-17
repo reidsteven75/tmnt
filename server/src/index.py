@@ -52,7 +52,7 @@ def getFiles():
   if initRotation not in ROTATE_TRANSLATE_MAP:
     return bad_request('invalid query param \'initRotation\', it must be one of ' +
                       str(list(ROTATE_TRANSLATE_MAP)) + 
-                      '. You can change this in \'web-app/config.js\'')
+                      '. You can change this in \'/web-app/src/config.js\'')
 
   # no .txt files
   num_files = len(files)

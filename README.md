@@ -20,7 +20,7 @@ http://0.0.0.0:3000/
 4. Enjoy
 
 #### Changing Initial Rotation State
-In `/web-app/config.js` update `initRotation` to 0, 90, 180, or 270.
+In `/web-app/src/config.js` update `initRotation` to 0, 90, 180, or 270.
 - 0 = north
 - 90 = east
 - 180 = south
