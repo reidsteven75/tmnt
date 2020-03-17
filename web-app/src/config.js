@@ -1,5 +1,5 @@
 export const config = {
-  initRotation: 270,
+  initRotation: 0,
   sidebarWidth: 285,
   gridPadding: 5,
   rendererFPS: 30,
@@ -13,8 +13,8 @@ export const config = {
       }
     },
     mid: {
-      updateRate: 300,
-      easing: 0.3,
+      updateRate: 400,
+      easing: 0.35,
       slider: {
         value: 1,
         label: 'Normal'
@@ -22,7 +22,7 @@ export const config = {
     },
     slow: {
       updateRate: 1000,
-      easing: 0.1,
+      easing: 0.15,
       slider: {
         value: 0,
         label: 'Slow'

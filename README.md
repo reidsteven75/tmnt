@@ -19,6 +19,13 @@ http://0.0.0.0:3000/
 3. Click `Load`
 4. Enjoy
 
+#### Changing Initial Rotation State
+In `/web-app/config.js` update `initRotation` to 0, 90, 180, 270.
+- 0 = North
+- 90 = East
+- 180 = South
+- 270 = West
+
 #### Loading New Data
 Replace the file in `/data` with a new .txt file containing a sequence of 'L,F,R' characters, then click `Load` in web app.
 
