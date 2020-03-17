@@ -20,11 +20,11 @@ http://0.0.0.0:3000/
 4. Enjoy
 
 #### Changing Initial Rotation State
-In `/web-app/config.js` update `initRotation` to 0, 90, 180, 270.
-- 0 = North
-- 90 = East
-- 180 = South
-- 270 = West
+In `/web-app/config.js` update `initRotation` to 0, 90, 180, or 270.
+- 0 = north
+- 90 = east
+- 180 = south
+- 270 = west
 
 #### Loading New Data
 Replace the file in `/data` with a new .txt file containing a sequence of 'L,F,R' characters, then click `Load` in web app.
@@ -35,4 +35,4 @@ Replace the file in `/data` with a new .txt file containing a sequence of 'L,F,R
 - UI is not visually responsive when changing screen width after app is loaded
 
 #### Misc
-[Icon Generator](https://favicon.io/favicon-converter/)
+- [Icon Generator](https://favicon.io/favicon-converter/)
